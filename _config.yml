@@ -6,8 +6,8 @@ permalink:           pretty
 # Setup
 title:               Prefixy
 tagline:             'a prefix search as a service'
-description:         'Prefixy is an open source project currently in beta mode.'
-url:                 http://lanyon.getpoole.com
+description:         'Prefixy is an open source project currently in beta mode'
+url:                 http://prefixy.github.io
 baseurl:             ''
 gems:                [jekyll-paginate]
 paginate:            5

@@ -4,7 +4,7 @@
  <title>Prefixy</title>
  <link href="http://localhost:4000/atom.xml" rel="self"/>
  <link href="http://localhost:4000/"/>
- <updated>2017-12-13T17:27:34-08:00</updated>
+ <updated>2017-12-13T17:56:39-08:00</updated>
  <id>http://localhost:4000</id>
  <author>
    <name>Mark Otto</name>
@@ -17,7 +17,7 @@
    <link href="http://localhost:4000/2017/12/13/writeup/"/>
    <updated>2017-12-13T14:16:01-08:00</updated>
    <id>http://localhost:4000/2017/12/13/writeup</id>
-   <content type="html">&lt;p&gt;content&lt;/p&gt;
+   <content type="html">&lt;p&gt;contents&lt;/p&gt;
 </content>
  </entry>
  
