@@ -4,7 +4,7 @@
  <title>Prefixy</title>
  <link href="http://localhost:4000/atom.xml" rel="self"/>
  <link href="http://localhost:4000/"/>
- <updated>2017-12-13T18:31:17-08:00</updated>
+ <updated>2017-12-13T18:33:19-08:00</updated>
  <id>http://localhost:4000</id>
  <author>
    <name>Mark Otto</name>
@@ -22,7 +22,7 @@
   Your browser does not support the video tag.
 &lt;/video&gt;
 
-&lt;p&gt;&lt;a href=&quot;/assets/terms.gif&quot;&gt;Important terms&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/terms.gif&quot; alt=&quot;Important terms&quot; /&gt;&lt;/p&gt;
 </content>
  </entry>
  
