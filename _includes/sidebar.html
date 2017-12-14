@@ -5,7 +5,9 @@
 <!-- Toggleable sidebar -->
 <div class="sidebar" id="sidebar">
   <div class="sidebar-item">
-    <p>{{ site.description }}</p>
+    <p>
+      Visit <a href="http://prefixy.io">prefixy.io</a> to get started now.
+    </p>
   </div>
 
   <nav class="sidebar-nav">
@@ -27,12 +29,11 @@
 
     <a class="sidebar-nav-item" href="{{ site.github.repo }}/archive/v{{ site.version }}.zip">Download</a>
     <a class="sidebar-nav-item" href="{{ site.github.repo }}">GitHub project</a>
-    <span class="sidebar-nav-item">Currently v{{ site.version }}</span>
+    <!--<span class="sidebar-nav-item">Currently v{{ site.version }}</span>-->
   </nav>
 
   <div class="sidebar-item">
-    <p>
-      &copy; Prefixy {{ site.time | date: '%Y' }}. All rights reserved.
-    </p>
+    <p>MIT Prefixy {{ site.time | date: '%Y' }}.</p>
+    <p>{{ site.description }} Currently v{{ site.version }}.</p>
   </div>
 </div>
