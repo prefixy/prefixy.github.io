@@ -4,7 +4,7 @@
  <title>Prefixy</title>
  <link href="http://localhost:4000/atom.xml" rel="self"/>
  <link href="http://localhost:4000/"/>
- <updated>2017-12-13T18:57:58-08:00</updated>
+ <updated>2018-01-06T13:02:48-05:00</updated>
  <id>http://localhost:4000</id>
  <author>
    <name>Mark Otto</name>
@@ -13,16 +13,493 @@
 
  
  <entry>
-   <title>Building Prefix Search as a Service</title>
+   <title>Building Prefixy</title>
    <link href="http://localhost:4000/2017/12/13/writeup/"/>
-   <updated>2017-12-13T14:16:01-08:00</updated>
+   <updated>2017-12-13T17:16:01-05:00</updated>
    <id>http://localhost:4000/2017/12/13/writeup</id>
-   <content type="html">&lt;video style=&quot;width:100%&quot; autoplay=&quot;&quot; loop=&quot;&quot;&gt;
+   <content type="html">&lt;!-- &lt;video style=&quot;width:100%&quot; autoplay loop&gt;
   &lt;source src=&quot;/assets/demo.mp4&quot; type=&quot;video/mp4&quot; /&gt;
   Your browser does not support the video tag.
-&lt;/video&gt;
+&lt;/video&gt; --&gt;
 
-&lt;p&gt;&lt;img src=&quot;/assets/terms.gif&quot; alt=&quot;Important terms&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;This is the story of how Prefixy was built, a highly scalable, query optimized, hosted prefix search service for building autocomplete suggestions.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h2 class=&quot;no_toc&quot; id=&quot;table-of-contents&quot;&gt;Table of Contents&lt;/h2&gt;
+
+&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#introduction&quot; id=&quot;markdown-toc-introduction&quot;&gt;Introduction&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#what-is-prefixy&quot; id=&quot;markdown-toc-what-is-prefixy&quot;&gt;What is Prefixy?&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#who-are-we&quot; id=&quot;markdown-toc-who-are-we&quot;&gt;Who are we?&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#takeaways-and-objectives&quot; id=&quot;markdown-toc-takeaways-and-objectives&quot;&gt;Takeaways and objectives&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#terminology&quot; id=&quot;markdown-toc-terminology&quot;&gt;Terminology&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#design-goals&quot; id=&quot;markdown-toc-design-goals&quot;&gt;Design goals&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#requirements&quot; id=&quot;markdown-toc-requirements&quot;&gt;Requirements&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#implications--approach&quot; id=&quot;markdown-toc-implications--approach&quot;&gt;Implications &amp;amp; approach&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#data-structures--algorithms&quot; id=&quot;markdown-toc-data-structures--algorithms&quot;&gt;Data structures &amp;amp; algorithms&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#naive-hash&quot; id=&quot;markdown-toc-naive-hash&quot;&gt;Naive hash&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#naive-trie&quot; id=&quot;markdown-toc-naive-trie&quot;&gt;Naive trie&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#storing-completions-in-the-trie&quot; id=&quot;markdown-toc-storing-completions-in-the-trie&quot;&gt;Storing completions in the trie&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#holding-l-constant&quot; id=&quot;markdown-toc-holding-l-constant&quot;&gt;Holding L constant&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#holding-k-constant&quot; id=&quot;markdown-toc-holding-k-constant&quot;&gt;Holding K constant&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#prefix-hash-tree&quot; id=&quot;markdown-toc-prefix-hash-tree&quot;&gt;Prefix hash tree&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#enter-redis&quot; id=&quot;markdown-toc-enter-redis&quot;&gt;Enter Redis&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#comparing-redis-data-structures&quot; id=&quot;markdown-toc-comparing-redis-data-structures&quot;&gt;Comparing Redis data structures&lt;/a&gt;        &lt;ul&gt;
+          &lt;li&gt;&lt;a href=&quot;#list&quot; id=&quot;markdown-toc-list&quot;&gt;List&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#sorted-set&quot; id=&quot;markdown-toc-sorted-set&quot;&gt;Sorted set&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#maintaining-bucket-limit-k&quot; id=&quot;markdown-toc-maintaining-bucket-limit-k&quot;&gt;Maintaining Bucket Limit (K)&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#persistence-strategy&quot; id=&quot;markdown-toc-persistence-strategy&quot;&gt;Persistence Strategy&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#why-mongodb&quot; id=&quot;markdown-toc-why-mongodb&quot;&gt;Why MongoDB&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#working-with-mongodb---search&quot; id=&quot;markdown-toc-working-with-mongodb---search&quot;&gt;Working with MongoDB - Search&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#system-architecture&quot; id=&quot;markdown-toc-system-architecture&quot;&gt;System architecture&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#building-the-service&quot; id=&quot;markdown-toc-building-the-service&quot;&gt;Building the service&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#authentication-setup&quot; id=&quot;markdown-toc-authentication-setup&quot;&gt;Authentication setup&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#implementing-multi-tenancy&quot; id=&quot;markdown-toc-implementing-multi-tenancy&quot;&gt;Implementing Multi-tenancy&lt;/a&gt;        &lt;ul&gt;
+          &lt;li&gt;&lt;a href=&quot;#multi-tenancy-in-redis&quot; id=&quot;markdown-toc-multi-tenancy-in-redis&quot;&gt;Multi-tenancy in Redis&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#multi-tenancy-in-mongodb&quot; id=&quot;markdown-toc-multi-tenancy-in-mongodb&quot;&gt;Multi-tenancy in MongoDB&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#clientjs&quot; id=&quot;markdown-toc-clientjs&quot;&gt;Client.js&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#future-plans&quot; id=&quot;markdown-toc-future-plans&quot;&gt;Future Plans&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#custom-configurability-of-l-and-k&quot; id=&quot;markdown-toc-custom-configurability-of-l-and-k&quot;&gt;Custom configurability of L and K&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#scripting-redis-to-reduce-network-requests&quot; id=&quot;markdown-toc-scripting-redis-to-reduce-network-requests&quot;&gt;Scripting Redis to reduce network requests&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#api-rate-limiter&quot; id=&quot;markdown-toc-api-rate-limiter&quot;&gt;API rate limiter&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#questions&quot; id=&quot;markdown-toc-questions&quot;&gt;Questions?&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#references&quot; id=&quot;markdown-toc-references&quot;&gt;References&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
+
+&lt;p&gt;We began our project by wondering about autocomplete. It’s intimately familiar to anyone who has used Google and almost taken for granted: you begin typing and things you may be looking for are magically presented to you based on what you’ve entered so far. It’s powerful and useful, so it’s no surprise that there are many independent variations of autocomplete widely available. 
+Many of these solutions take time and effort to implement, are limited by data constraints in the front end, and often work off of a fixed set of suggestions as opposed to dynamically integrating user input and ranking suggestions, thereby missing some of the power that a Google-style autocomplete has.&lt;/p&gt;
+
+&lt;p&gt;Thus we were intrigued by the idea of an easy to implement autocomplete that any developer could use on any search field for their site with just a simple client side code snippet. Not only that, but a robust and fully featured autocomplete that dynamically crowd-sources user input and ranks it by popularity, improving suggestions over time, much like Google would.&lt;/p&gt;
+
+&lt;p&gt;This led us to ask the question, “how can we build a system that supports efficient prefix search in order to power a google-style autocomplete?” This question began a deep dive analysis into the data structures, algorithms, and system design, for what would ultimately become Prefixy.&lt;/p&gt;
+
+&lt;h3 id=&quot;what-is-prefixy&quot;&gt;What is Prefixy?&lt;/h3&gt;
+
+&lt;p&gt;Prefixy is a hosted prefix search engine that powers autocomplete suggestions. It dynamically updates and ranks suggestions based on popularity. It is an easy to use service that can be used to set up powerful and adaptive autocomplete on any website with just a simple code snippet.&lt;/p&gt;
+
+&lt;p&gt;To get an idea of how it works on the frontend, try out the demo below. Notice that as you type, suggestions appear that you can select. Upon pressing Enter, your search is submitted, and depending on the popularity ranking of other suggestions, you may see your search appear higher in the list of suggestions the next time you type.&lt;/p&gt;
+
+&lt;h3 id=&quot;who-are-we&quot;&gt;Who are we?&lt;/h3&gt;
+
+&lt;p&gt;We are a team of three software engineers, who are each looking for new work opportunities. Please don’t hesitate to reach out if we seem like a good fit for your team!&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; need team images and links &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;takeaways-and-objectives&quot;&gt;Takeaways and objectives&lt;/h3&gt;
+
+&lt;p&gt;Let’s get into the story of how we built Prefixy. The goal of this post is communicate the following takeaways:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;What we prioritized during the research and development stages of the project&lt;/li&gt;
+  &lt;li&gt;How we thought about tradeoffs as we designed and built a system from scratch&lt;/li&gt;
+  &lt;li&gt;How we evaluated data structures, algorithms, and data stores for the system&lt;/li&gt;
+  &lt;li&gt;How we built a system with the flexibility to scale as we get more users&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Hopefully some of the process and lessons learned we share here will be of value to you in your own project!&lt;/p&gt;
+
+&lt;h3 id=&quot;terminology&quot;&gt;Terminology&lt;/h3&gt;
+
+&lt;p&gt;Before we go further, there is certain terminology we used as we built this project that will be helpful in understanding the rest of this post. Consider the following definitions along with the diagram below:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;prefix&lt;/strong&gt; - What the user has typed so far.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;completions&lt;/strong&gt; - All possible ways a given prefix can be completed in order to form a valid word or phrase.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;suggestions&lt;/strong&gt; - The top ranked completions, which will be presented to the user.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;score&lt;/strong&gt; - An integer representing the popularity of a given completion.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;selection&lt;/strong&gt; - The suggestion that the user chooses or a new completion that the user submits.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/terms.gif&quot; alt=&quot;terminology&quot; /&gt;
+&lt;strong&gt;##open####open##&lt;/strong&gt; update image &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;design-goals&quot;&gt;Design goals&lt;/h2&gt;
+
+&lt;p&gt;Now that we’re on the same page as far as the terminology, let’s get into the design goals we had for our system.&lt;/p&gt;
+
+&lt;h3 id=&quot;requirements&quot;&gt;Requirements&lt;/h3&gt;
+
+&lt;p&gt;One of the most important requirements is that we provide lightning fast reads. A user of an autocomplete expects that suggestions will appear nearly instantaneously as they type. If they don’t, the autocomplete is no longer useful. For instance, Facebook found that in order for an autocomplete to be useful, it needs to return suggestions in &lt;a href=&quot;https://www.facebook.com/notes/facebook-engineering/the-life-of-a-typeahead-query/389105248919/&quot;&gt;less than 100 milliseconds&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;The other major requirement is that suggestions need to be dynamically ranked and relevant to the user. When a user types a prefix, the most popular suggestions should be shown to them. Over time, the ranking of suggestions should change as their popularity changes.&lt;/p&gt;
+
+&lt;h3 id=&quot;implications--approach&quot;&gt;Implications &amp;amp; approach&lt;/h3&gt;
+&lt;p&gt;The first implication of the requirements is that we need to prioritize the speed of reads. When we analyze data structures, algorithms, and persistence strategies, we need to make sure that the choices we make always support fast reads.&lt;/p&gt;
+
+&lt;p&gt;The other implication is that we need some sort of ranking algorithm. We need a way to determine which completions are the most popular for a given prefix and thereby have to be able to update the scores of completions over time.&lt;/p&gt;
+
+&lt;h2 id=&quot;data-structures--algorithms&quot;&gt;Data structures &amp;amp; algorithms&lt;/h2&gt;
+
+&lt;p&gt;Long before any line of code was written, we wanted to determine the best data structures and algorithms to support our requirements. We dedicated significant time for this analysis, knowing that it was a key component in achieving our goals.&lt;/p&gt;
+
+&lt;p&gt;As we compared different options, there were three main measurements we needed to keep in mind for Big O:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;N - the number of keys/nodes (e.g. prefixes) in our dataset&lt;/li&gt;
+  &lt;li&gt;K - the number of completions stored for a given prefix&lt;/li&gt;
+  &lt;li&gt;L - the length of the prefix we are looking up&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;naive-hash&quot;&gt;Naive hash&lt;/h3&gt;
+
+&lt;p&gt;The first data structure we considered was a hash table, in which we store all of the completions as keys and their scores as values.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; naive hash image &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;First, we analyzed the time complexity of searching for completions for a given prefix with this approach. Here are the required steps:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Iterate through all of the keys: O(N)&lt;/li&gt;
+  &lt;li&gt;For each completion, compare to the prefix to check for match: O(L)&lt;/li&gt;
+  &lt;li&gt;Sort the completions we’ve found O(K log K) (sorting our array of matches)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; searching naive hash img &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;This means the time complexity of search would be O(NL) + O(K log K).&lt;/p&gt;
+
+&lt;p&gt;The main bottleneck of this approach is the O(N) check of all keys. As our data grows in size, this is far too slow to support our requirements. (Imagine how quickly the number of keys will grow when the service is powering thousands of autocompletes, capturing any new completions entered!)&lt;/p&gt;
+
+&lt;p&gt;In terms of space, the naive hash is reasonable. The space consumed would be equal to the number of completions (N) plus the extra space consumed in order to accommodate the hash’s load factor.&lt;/p&gt;
+
+&lt;h3 id=&quot;naive-trie&quot;&gt;Naive trie&lt;/h3&gt;
+
+&lt;p&gt;The next data structure we considered was a trie. Tries were interesting to us from the get-go as they happen to be a natural fit for prefix search, as it allows for O(L) lookup of a prefix (L being the length of the prefix!). It also takes up less space than the naive hash, as all descendents of a given node share the node as a common prefix. We also don’t need to accommodate extra space for the hash’s load factor.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; trie img &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Looks like a good choice so far, but how would searching for completions work? Let’s look at the steps required:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Find the prefix O(L)&lt;/li&gt;
+  &lt;li&gt;Find all completions (and put them into an array) O(N)&lt;/li&gt;
+  &lt;li&gt;Sort the completions O(K log K)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; trie search img &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Therefore the total time complexity for search is O(L) + O(N) + O(K log K), with the bottleneck again being O(N).&lt;/p&gt;
+
+&lt;p&gt;You may be wondering, “why it is O(N) for finding the completions?” This is because after finding the prefix node, you still have to traverse down to all of its child nodes to find its completions. Although often this would technically not be every node, as the longer the prefix, there are ostensibly fewer child nodes to traverse down to.&lt;/p&gt;
+
+&lt;p&gt;Still being stuck on O(N), we asked ourselves, “how do we remove the O(N) bottleneck from search?”&lt;/p&gt;
+
+&lt;h3 id=&quot;storing-completions-in-the-trie&quot;&gt;Storing completions in the trie&lt;/h3&gt;
+
+&lt;p&gt;We realized that if we stored all of the completions for a given prefix in its node, we would no longer have to traverse to find all of the completions, thereby effectively eliminating the O(N) bottleneck.&lt;/p&gt;
+
+&lt;p&gt;Now, it takes just two steps to get the completions for a prefix:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Find the prefix node O(L)&lt;/li&gt;
+  &lt;li&gt;Sort the completions at that node O(K log K)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; trie completions search img &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;The time complexity is now significantly better, but this does come at a cost. We consume more space duplicating the completions for each prefix and require more writes to keep our completions up to date. But since speed is our priority, this is a trade off we are happy to make.&lt;/p&gt;
+
+&lt;p&gt;But can we do better than this? As you’re about to see, there are indeed further optimizations we can make that will improve time and space complexity significantly.&lt;/p&gt;
+
+&lt;h3 id=&quot;holding-l-constant&quot;&gt;Holding L constant&lt;/h3&gt;
+
+&lt;p&gt;There are diminishing returns to storing longer and longer prefixes. We can reasonably limit the max length of prefixes we store. Take for example the following completion:&lt;/p&gt;
+
+&lt;p&gt;“Tyrannosaurus Rex lived during the late Cretaceous period.”&lt;/p&gt;
+
+&lt;p&gt;We can reasonably expect that very few people will type a very long prefix such as:&lt;/p&gt;
+
+&lt;p&gt;“Tyrannosaurus Rex lived during the late C”&lt;/p&gt;
+
+&lt;p&gt;Instead, it’s much more likely that a user would type “Tyranno” or “Tyrannosaurus Rex l” and then choose a suggestion. Therefore, we can safely put a limit on the length of prefixes we store. We can set this limit to a reasonable amount like 20 characters.&lt;/p&gt;
+
+&lt;p&gt;This has two benefits. For one, we save space because we don’t have to store prefixes longer than the limit and the completions associated with those superfluous prefixes. The second and primary benefit, is that now the O(L) time to find the prefix effectively becomes constant O(1) time. And this is true because L will never be more than the constant limit.&lt;/p&gt;
+
+&lt;h3 id=&quot;holding-k-constant&quot;&gt;Holding K constant&lt;/h3&gt;
+
+&lt;p&gt;Similarly, there are diminishing returns to storing more and more completions for a given prefix. Remember that the user of an autocomplete will only see a small subset (what we call suggestions) of all of the completions for a given prefix. An autocomplete will normally display only around 5 to 10 of the most popular suggestions for a prefix.&lt;/p&gt;
+
+&lt;p&gt;So we really only need to store enough completions in order to enable accurate popularity ranking. We will get into the nitty gritty of the ranking algorithm we use later. For now, trust that storing around 50 completions for a given prefix is accurate enough for our needs.&lt;/p&gt;
+
+&lt;p&gt;Having a bucket limit on the number of completions we store for a prefix saves us space. But more importantly, the O(K log K) sorting time effectively becomes constant O(1) time. This holds because K will never grow larger than 50.&lt;/p&gt;
+
+&lt;p&gt;So by holding L and K constant, we now have effectively improved from O(L) + O(K log K) to O(1) + O(1). This reduces to O(1) time complexity for search! This now looks like a great data structure for our needs.&lt;/p&gt;
+
+&lt;h3 id=&quot;prefix-hash-tree&quot;&gt;Prefix hash tree&lt;/h3&gt;
+
+&lt;p&gt;There’s one last optimization we can make. We can map the trie’s prefixes with the completions stored at each node to a hash in a data structure that has been referred to as a Prefix Hash Tree (our confidence in this approach was bolstered by &lt;a href=&quot;https://people.eecs.berkeley.edu/~sylvia/papers/pht.pdf&quot;&gt;this paper&lt;/a&gt; which used utilized this to distribute a trie).&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; prefix hash tree img &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Basically, we map every node of the trie to a key in a hash. We also map the completions stored at that node to that key’s value.&lt;/p&gt;
+
+&lt;p&gt;The prefix hash tree gives us a few advantages over the trie. We can access any prefix in a single step O(1). But more importantly for our needs, the key/value structure is easy to implement in a NoSQL data store (we’ll get to why that’s beneficial soon!).&lt;/p&gt;
+
+&lt;p&gt;Again, we trade space for time. The hash takes up more space than the trie. This is because we lose the trie’s ability to share common characters of prefixes. We also need to allocate more space now to maintain the hash’s load factor. However, we are willing to take up more space for the previously mentioned advantages, as our priority is speed of reads.&lt;/p&gt;
+
+&lt;p&gt;In some ways, it may seem like we’re going back to the first naive hash solution we initially considered and immediately rejected. But the prefix hash tree is a much more sophisticated implementation when compared to the naive hash solution. Unlike the naive hash, the prefix hash tree meets our performance requirement for speed of reads.&lt;/p&gt;
+
+&lt;p&gt;The following table summarizes our data structure analysis:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; big O summary table &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;enter-redis&quot;&gt;Enter Redis&lt;/h3&gt;
+&lt;p&gt;As we mentioned, one of the benefits of the prefix hash tree is that it can easily map to a key/value NoSQL database. In our case, we chose to use Redis. Redis is a great match for our requirements for several reasons.&lt;/p&gt;
+
+&lt;p&gt;First of all, it is an entirely in-memory database. This means it can perform reads and writes much faster than a hard-disk data store. This is great for our use case, since fast reads are a priority for us.&lt;/p&gt;
+
+&lt;p&gt;Secondly, Redis provides us with a variety of native in-memory data structures. So we can store prefixes as Redis keys. The key’s value will be that prefix’s completions, which we can store in one of these native in-memory data structures. But which Redis data structure should we use to store completions?&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; which Redis data struc img &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;comparing-redis-data-structures&quot;&gt;Comparing Redis data structures&lt;/h3&gt;
+
+&lt;h4 id=&quot;list&quot;&gt;List&lt;/h4&gt;
+
+&lt;p&gt;To store completions, the first Redis data structure we considered using was the list. A list in Redis is a doubly-linked list, in which each list node holds a string. With a doubly-linked list, we can access the head node or tail node in O(1) time. However, accessing other nodes takes O(K) time, where K is the number of completions for a given prefix.&lt;/p&gt;
+
+&lt;p&gt;Because each list node can only hold a string, we would need to store the score of the completion as part of the completion string.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; Redis list img &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;One key function of our system is search (to get the suggestions for a prefix). Another key function is increment (to increase the score of a completion). Let’s examine how each of these functions would work if we choose the list data structure.&lt;/p&gt;
+
+&lt;p&gt;Search is quite straightforward with a list. In order to get the top suggestions for a given prefix, all we do is issue a single Redis &lt;code class=&quot;highlighter-rouge&quot;&gt;LRANGE&lt;/code&gt; command. As long as we keep each list sorted, the top suggestions will always be at the head of a list. This means that we can access any prefix’s suggestions in O(1) time.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; Redis list search img &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;The increment logic, on the other hand, is quite cumbersome. It requires the following steps:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Issue &lt;code class=&quot;highlighter-rouge&quot;&gt;LRANGE&lt;/code&gt; command to get the entire list O(K)&lt;/li&gt;
+  &lt;li&gt;Binary search of returned array to find and increment completion: O(log K)&lt;/li&gt;
+  &lt;li&gt;Binary search to find the completion’s correct new position: O(log K)&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;LREM&lt;/code&gt; to remove completion from its current position: O(K)&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;LINSERT&lt;/code&gt; to insert completion in its new position: O(K)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; Redis list increment slide gif &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;There are several disadvantages to this algorithm. The overall time complexity is O(K), and requires at least two round trips to Redis. The algorithm requires a large payload in the first request, as we need to retrieve the entire list. We need to do the sorting in our application, rather than in the database. There is no uniqueness guarantee for our data, which we need in order to maintain accurate scores. And we may run into concurrency issues with this many steps for the update logic.&lt;/p&gt;
+
+&lt;p&gt;So while we like the O(1) search the list offers, the list does not provide us with efficient updating.&lt;/p&gt;
+
+&lt;h4 id=&quot;sorted-set&quot;&gt;Sorted set&lt;/h4&gt;
+
+&lt;p&gt;Next, we considered using the Redis Sorted Set for storing completions. The sorted set is a collection of items. Each item consists of a string and its corresponding score. Items in the sorted set maintain order by score. Items with the same score are sorted lexicographically. Additionally, uniqueness of values is maintained. All of these features are a very good match for the structure of our data! Now let’s examine how each of our key functions would work.&lt;/p&gt;
+
+&lt;p&gt;Using the Redis &lt;code class=&quot;highlighter-rouge&quot;&gt;ZRANGE&lt;/code&gt; command, searching for suggestions would happen in O(log K) time. Not quite as efficient as the list, but still extremely fast, especially if we limit K.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; Redis sorted set search img &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Now let’s look at the increment logic. In most cases, we can accomplish this in a single command! We simply issue a &lt;code class=&quot;highlighter-rouge&quot;&gt;ZINCRBY&lt;/code&gt; command to increment the score of a completion. In Redis, sorted sets are implemented under the hood with a skip list data structure, so this update happens in O(log K) time.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; Redis sorted set increment img &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;In summary, the many benefits of using sorted sets include: fewer round trips to Redis, less chance of concurrency issues, smaller payloads, a uniqueness guarantee, and non-blocking updates. Sorted sets also allow us to maintain the ordering of completions at the database level. This is faster than taking care of order in our application. Search is technically slower than the list, as it is O(log K) rather than O(1). However, logarithmic time is still extremely fast, especially when we limit K. Because of all the above considerations, we ultimately chose to use sorted sets to store completions.&lt;/p&gt;
+
+&lt;h3 id=&quot;maintaining-bucket-limit-k&quot;&gt;Maintaining Bucket Limit (K)&lt;/h3&gt;
+
+&lt;p&gt;As we discussed, incrementing a score in a Redis Sorted Set is straightforward. We can simply use the &lt;code class=&quot;highlighter-rouge&quot;&gt;ZINCRBY&lt;/code&gt; command. If the completion specified already exists in the sorted set, its score will be incremented. If the completion specified does not exist yet in the sorted set, it will be added.&lt;/p&gt;
+
+&lt;p&gt;Remember though that we decided to place a limit on K (the number of completions in a bucket). So we need to have logic in our application to maintain the bucket limit. Here we are indebted to Salvatore Sanfilippo, the creator of Redis, who suggested an algorithm to do this in &lt;a href=&quot;http://oldblog.antirez.com/post/autocomplete-with-redis.html&quot;&gt;his blog&lt;/a&gt;. The procedure is as follows: 
+When the bucket is full and the completion is not yet in the bucket, remove the completion with the lowest score.
+Add the new completion with the removed completion’s score plus 1.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; bucket maintenance img &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Why use the removed completion’s score plus 1? Simply put, it ensures that a new completion will not be immediately replaced by a subsequent new completion. This is important because if users continue to search for a new completion, we need to provide a way for that completion to be able to rise to the top suggestions. Adding a new completion with the removed completion’s score plus 1, ensures that each new completion gets a shot to rise to the top.&lt;/p&gt;
+
+&lt;p&gt;Additionally, we value the recency of queries and this algorithm reflects that. Inserting a new completion with the removed completion’s score plus 1 gives a “boost” to recent queries. This lets us give more weight to fresh queries over stale queries, which helps us return more relevant suggestions to the user.&lt;/p&gt;
+
+&lt;h2 id=&quot;persistence-strategy&quot;&gt;Persistence Strategy&lt;/h2&gt;
+
+&lt;p&gt;Now that we had a way to efficiently store, rank, and search our data, the next question we asked was, “what if we run out of memory?” Redis is a completely in-memory database, and as our user base expands and our data grows larger, we will eventually exceed what we can fit in memory.&lt;/p&gt;
+
+&lt;p&gt;Our operating assumption is that memory gets more expensive over time, and not all prefixes need necessarily be available in memory at all times. As such, we can treat Redis in a cache-like manner by setting an LRU policy in Redis, so that Redis will hold the most recently used prefixes, and evict the least recently used prefixes when maximum memory has been reached.&lt;/p&gt;
+
+&lt;p&gt;To act as the long-term system of record we decided to use MongoDB for hard disk persistence. Whenever we write to Redis, after writing, we serialize the sorted set into MongoDB (therefore Redis is more than just a cache for us as we still rely on it to perform part of our application logic, e.g. maintaining order and ranks).&lt;/p&gt;
+
+&lt;p&gt;Using this model, now when we perform a search, we check Redis first, which will usually have our data (due to the efficacy of the LRU policy). In the case it doesn’t, we check MongoDB, which has the complete set of prefixes.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; run out of memory img &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;why-mongodb&quot;&gt;Why MongoDB&lt;/h3&gt;
+
+&lt;p&gt;We chose MongoDB primarily for the fact that its key-document metaphor mapped nicely to the key-value setup we utilized in Redis. By serializing the sorted set of completions as a document and storing it with its prefix in MongoDB, the persistence process is relatively seamless. Further, being able to index prefixes to enable binary search for quick retrieval of documents and collections for multi-tenancy (more on that soon), made for a nice enough fit that we didn’t spend much incremental time evaluating other options.&lt;/p&gt;
+
+&lt;p&gt;Also in manually testing the response time of MongoDB with a flushed Redis cache (which meant every prefix query had to check with MongoDB since Redis was empty), the suggestions were still perceived (subjectively) as being returned instantaneously. Obviously this is an area we would like to do more testing of, especially under load, and is part of our future plans.&lt;/p&gt;
+
+&lt;h3 id=&quot;working-with-mongodb---search&quot;&gt;Working with MongoDB - Search&lt;/h3&gt;
+
+&lt;p&gt;Although most of the time we can return results from a single call to Redis, we have to load data from MongoDB whenever we have a cache miss.&lt;/p&gt;
+
+&lt;p&gt;First we await the result of the call to Redis:&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot; data-lang=&quot;javascript&quot;&gt;&lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;search&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;prefix&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;...)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;kd&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kr&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;redisClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;zrangeAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;prefix&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;...);&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;length&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;===&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;    &lt;span class=&quot;kr&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;updateRedisFromMongo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;prefix&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;    &lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kr&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;redisClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;zrangeAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;prefix&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;...);&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;In case our result comes up empty, it’s possible that it got kicked out of Redis at some point and is sitting in MongoDB. In which case we update Redis with whatever data we have in MongoDB for that prefix:&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot; data-lang=&quot;javascript&quot;&gt;&lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;search&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;prefix&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;...)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;kd&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kr&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;redisClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;zrangeAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;prefix&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;...);&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;length&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;===&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;    &lt;span class=&quot;kr&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;updateRedisFromMongo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;prefix&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;    &lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kr&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;redisClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;zrangeAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;prefix&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;...);&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;Our update method finds the matching completions for the prefix in Mongo and pushes them into Redis. In case MongoDB had nothing for that prefix as well, this will load nothing into Redis.&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot; data-lang=&quot;javascript&quot;&gt;&lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;updateRedisFromMongo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;prefix&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;completions&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kr&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;mongoFind&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;prefix&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;completions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;length&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;    &lt;span class=&quot;nx&quot;&gt;redisCommands&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;push&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'zadd'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;...);&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;redisClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;batch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;redisCommands&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;execAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;After the update is complete we attempt to pull from Redis, now that it has been updated and return whatever we find there, since it now reflects the most up to date data for that prefix:&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot; data-lang=&quot;javascript&quot;&gt;&lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;search&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;prefix&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;...)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;kd&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kr&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;redisClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;zrangeAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;prefix&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;...);&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;length&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;===&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;    &lt;span class=&quot;kr&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;mongoLoad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;prefix&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;    &lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kr&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;redisClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;zrangeAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;prefix&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;...);&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;Working with MongoDB - Increment
+Whenever we make a change in Redis we wait for it to finish before persisting the change to Mongo. This is because Redis takes care of sorting logic for us.&lt;/p&gt;
+
+&lt;p&gt;After the promise for the changes into Redis returns, we then persist that prefix and its updated completions into MongoDB.&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot; data-lang=&quot;javascript&quot;&gt;&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;redisClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;batch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;commands&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;execAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;then&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;kr&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;mongoPersistPrefixes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;prefixes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;...);&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;We do this by grabbing the most up to date completions from Redis and then pushing them into MongoDB for that prefix.&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot; data-lang=&quot;javascript&quot;&gt;&lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;mongoPersist&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;prefix&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;...)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;completions&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kr&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;redisClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;zrangeAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;mongoInsert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;prefix&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;completions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;...);&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;h2 id=&quot;system-architecture&quot;&gt;System architecture&lt;/h2&gt;
+
+&lt;p&gt;Our system architecture so far looks like this:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; system architecture &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;building-the-service&quot;&gt;Building the service&lt;/h3&gt;
+
+&lt;p&gt;The next goal of our project was to expand our system into a hosted service that can support multi-tenancy. We wanted to create an easy-to-use service that other developers can use to simply setup autocomplete on their web apps.&lt;/p&gt;
+
+&lt;h3 id=&quot;authentication-setup&quot;&gt;Authentication setup&lt;/h3&gt;
+&lt;p&gt;To implement the service, we added a Token Generator server to our system. We set it up so that the Token Generator server and Prefixy server both share a common secret. This means that the Prefixy server can decrypt any tokens encrypted by the Token Generator server.&lt;/p&gt;
+
+&lt;p&gt;When a developer requests it, the Token Generator generates a unique tenant ID for her. The tenant ID is then encrypted into a unique JSON web token (JWT). Finally, the token is included in a custom script that initializes the frontend javascript client.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; code snippet &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Now the developer can copy and paste the custom generated script. She can include the script in the frontend code of her web app. Now, requests to Prefixy from her app will include her unique JWT. Our Prefixy server can then decrypt the JWT to get the developer’s unique tenant ID.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; &lt;strong&gt;##open####open##&lt;/strong&gt;
+(authentication middleware code snippet)&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; &lt;strong&gt;##open####open##&lt;/strong&gt;
+(TOKEN GENERATION + AUTHENTICATION WORKFLOW diagram)&lt;/p&gt;
+
+&lt;h3 id=&quot;implementing-multi-tenancy&quot;&gt;Implementing Multi-tenancy&lt;/h3&gt;
+
+&lt;p&gt;But how do we use the tenant ID to implement multi-tenancy on the backend? Good question! We use the tenant ID for namespacing our data.&lt;/p&gt;
+
+&lt;h4 id=&quot;multi-tenancy-in-redis&quot;&gt;Multi-tenancy in Redis&lt;/h4&gt;
+
+&lt;p&gt;In Redis, we prepend every key of a developer’s data with her tenant ID. So on the backend, all of our Redis keys look like this: &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;tenantId&amp;gt;:&amp;lt;prefix&amp;gt;&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; &lt;strong&gt;##open####open##&lt;/strong&gt;
+(code snippet)&lt;/p&gt;
+
+&lt;p&gt;Now whenever a search request from the developer’s app comes in, we prepend her tenant ID to the search query. The query will now be in the right format (e.g. &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;tenantId&amp;gt;:&amp;lt;prefix&amp;gt;&lt;/code&gt;), and we can simply do a one-to-one key/value lookup.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; &lt;strong&gt;##open####open##&lt;/strong&gt;
+(code snippet)&lt;/p&gt;
+
+&lt;p&gt;For increments, the input we’re working with is a completion. We need to increment that completion’s score for every single prefix that it belongs to. So we slice up the completion into all of its possible prefixes. Then we simply prepend the app developer’s tenant ID to each sliced up prefix. Now we can perform our increment logic for the completion and each of its prepended prefixes.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; &lt;strong&gt;##open####open##&lt;/strong&gt;
+(code snippet)&lt;/p&gt;
+
+&lt;h4 id=&quot;multi-tenancy-in-mongodb&quot;&gt;Multi-tenancy in MongoDB&lt;/h4&gt;
+&lt;p&gt;In MongoDB, we allocate a collection for each tenant ID. Now we can call the &lt;code class=&quot;highlighter-rouge&quot;&gt;findOneAndUpdate&lt;/code&gt; method on a collection, in order to insert data into a particular collection. This method ensures that all of the app developer’s data is inserted only within the context of her own allocated collection.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; &lt;strong&gt;##open####open##&lt;/strong&gt;
+(code snippet)&lt;/p&gt;
+
+&lt;p&gt;For searches in MongoDB, we can simply chain the &lt;code class=&quot;highlighter-rouge&quot;&gt;find&lt;/code&gt; method off the appropriate collection. Now the search will be namespaced under the appropriate collection.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; &lt;strong&gt;##open####open##&lt;/strong&gt;
+(code snippet)&lt;/p&gt;
+
+&lt;p&gt;And the same goes for really any MongoDB operation. For instance, to delete a prefix in MongoDB, we call the &lt;code class=&quot;highlighter-rouge&quot;&gt;findOneAndDelete&lt;/code&gt; method on the relevant collection.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; &lt;strong&gt;##open####open##&lt;/strong&gt;
+(code snippet)&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; &lt;strong&gt;##open####open##&lt;/strong&gt;\
+(MULTI-TENANCY WORKFLOW diagram)&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; &lt;strong&gt;##open####open##&lt;/strong&gt;
+(MULTI-TENANCY ON THE BACK-END diagram)&lt;/p&gt;
+
+&lt;h3 id=&quot;clientjs&quot;&gt;Client.js&lt;/h3&gt;
+&lt;p&gt;As mentioned earlier, our frontend client is setup to talk to the Prefixy remote server. In order to fetch suggestions, we set up an event listener which listens for any typing being done on the search box.&lt;/p&gt;
+
+&lt;p&gt;Whenever this event is fired, the client makes a GET request to the appropriate API endpoint on our Prefixy server. At this time, the client passes along to our Prefixy server the prefix query, or sequence of characters so far that the user has typed. The client also passes along the JWT that was embedded into the script. Now our Prefixy server has everything it needs to fulfill the request.&lt;/p&gt;
+
+&lt;p&gt;Once the suggestions come back, the callback pattern is used to invoke the &lt;code class=&quot;highlighter-rouge&quot;&gt;draw&lt;/code&gt; method. This method takes each suggestion and appends a corresponding list item to the dropdown list of suggestions.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; &lt;strong&gt;##open####open##&lt;/strong&gt;
+(code snippet)&lt;/p&gt;
+
+&lt;p&gt;Similarly, in order to increment a completion’s score, we set up an event listener which listens for any time a user submits a search query.&lt;/p&gt;
+
+&lt;p&gt;When this event is fired, the client makes a PUT request to the appropriate API endpoint on our Prefixy server. At this time, the client passes along the completion to be incremented. And the client also passes along the JWT embedded into the script. Now our Prefixy server will take care of the rest and we can simply exit the function, since there’s nothing else we need to do after the user submits their search query.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; &lt;strong&gt;##open####open##&lt;/strong&gt;
+(code snippet)&lt;/p&gt;
+
+&lt;h2 id=&quot;future-plans&quot;&gt;Future Plans&lt;/h2&gt;
+&lt;h3 id=&quot;custom-configurability-of-l-and-k&quot;&gt;Custom configurability of L and K&lt;/h3&gt;
+&lt;p&gt;As of now, we hard code L and K to numbers that we consider to be optimal for the vast majority of use cases. For L, or the max number of chars of prefixes stored, that number is currently 15. And for K, or the max number of completions stored for a given prefix, that number is currently 50.&lt;/p&gt;
+
+&lt;p&gt;While these numbers work, we want to eventually allow the app developer to specify L and K if they so choose. It’s impossible for us to predict every possible use case someone might want to use Prefixy for, so giving the app developer the option of customizing L and K would be a nice feature to have.&lt;/p&gt;
+
+&lt;p&gt;###Scaling Redis to minimize cache misses and benchmarking persistence strategy
+Recall that if we run out of memory, we evict the least recently used prefixes in Redis but still keep them in MongoDB. In the event that a user does search for an evicted prefix, we get the prefix from MongoDB and put it back into Redis. Now whenever someone searches for the same prefix again, we’ll be able to get it for them straight from Redis.&lt;/p&gt;
+
+&lt;p&gt;Right now, Prefixy is technically still in beta mode. We currently have 25MB of RAM for Redis and 496MB of hard-disk space for MongoDB, giving us a 20:1 ratio of hard disk space to memory.. With this ratio, suggestions already appear to return near instantaneously and therefore we have not yet done any testing to find the ideal ratio of memory to hard-disk space.&lt;/p&gt;
+
+&lt;p&gt;However, we do hope to gain many more users within the coming weeks and months. In case Prefixy does experience a massive upsurge in popularity, we know we’ll need to perform extensive benchmarking in order to determine a suitable ratio of memory to hard-disk persistence. Tuning the app in this way will allow us to keep the response time low, even when we’re under heavy load from many users.&lt;/p&gt;
+
+&lt;h3 id=&quot;scripting-redis-to-reduce-network-requests&quot;&gt;Scripting Redis to reduce network requests&lt;/h3&gt;
+&lt;p&gt;Currently, we have a few places in our application logic where we make multiple network requests. For instance, incrementing the score of a completion takes multiple network requests. We also perform multiple network requests in order to “reinstate” an evicted prefix that a user has searched for. 
+We’re okay with these multiple network requests, since incrementing is a write operation which we’re not optimizing for. And as long as we keep an ideal ratio of memory to hard-disk space, reinstating an evicted prefix is an operation that will only happen rarely.&lt;/p&gt;
+
+&lt;p&gt;However, as a further optimization we could eliminate these multiple network requests entirely by using Redis Lua Scripting. Lua Scripting is a way to add functionality to Redis without writing C code. Doing this would allow us to push a lot of our complicated application code to the Redis server. The upshot would be fewer network requests as well as simplified code within our application. A win-win in our books, plus it would give us a convenient excuse to dig into a new programming language which is always fun!&lt;/p&gt;
+
+&lt;h3 id=&quot;api-rate-limiter&quot;&gt;API rate limiter&lt;/h3&gt;
+&lt;p&gt;Another optimization we can make is to rate limit our API. This would prevent malicious users from sending too many requests to our servers in a short period of time. For example, let’s say that we can reasonably set an upward bound of typing speed at 7 characters per second. This means we could set a limit of 7 QPS per user / IP address to keep our service from being overloaded.&lt;/p&gt;
+
+&lt;p&gt;We’ll also need to decide if we want to stay free forever or if we eventually want to move to a tiered pricing model. This decision will affect our rate limit quotas. For the time being however, we hope to offer Prefixy as a free service for as long as possible.&lt;/p&gt;
+
+&lt;h2 id=&quot;questions&quot;&gt;Questions?&lt;/h2&gt;
+&lt;p&gt;Feel free to reach out to us about any questions you have about the project. Each of us on the Prefixy team is currently looking for new work opportunities, so we’d be happy to hear from you if we would be a good candidate to join your team!&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; &lt;strong&gt;##open####open##&lt;/strong&gt;
+(names with our locations and personal websites)&lt;/p&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; &lt;strong&gt;##open####open##&lt;/strong&gt;
+Antirez Redis Autocomplete article
+Prefix Hash Tree paper&lt;/p&gt;
+
 </content>
  </entry>
  
