@@ -210,8 +210,7 @@ Many of these solutions take time and effort to implement, are limited by data c
 
 <p><strong>selection</strong> - The suggestion that the user chooses or a new completion that the user submits.</p>
 
-<p><img src="/assets/terms.gif" alt="terminology" />
-<strong>##open####open##</strong> update image <strong>##open####open##</strong></p>
+<p><img src="/assets/terminology.png" alt="terminology" /></p>
 
 <h2 id="design-goals">Design goals</h2>
 
@@ -244,7 +243,7 @@ Many of these solutions take time and effort to implement, are limited by data c
 
 <p>The first data structure we considered was a hash table, in which we store all of the completions as keys and their scores as values.</p>
 
-<p><strong>##open####open##</strong> naive hash image <strong>##open####open##</strong></p>
+<p><img src="/assets/naive-hash.png" alt="naive hash" /></p>
 
 <p>First, we analyzed the time complexity of searching for completions for a given prefix with this approach. Here are the required steps:</p>
 
@@ -254,7 +253,7 @@ Many of these solutions take time and effort to implement, are limited by data c
   <li>Sort the completions we’ve found O(K log K) (sorting our array of matches)</li>
 </ol>
 
-<p><strong>##open####open##</strong> searching naive hash img <strong>##open####open##</strong></p>
+<p><img src="/assets/naive-hash-search.png" alt="naive hash" /></p>
 
 <p>This means the time complexity of search would be O(NL) + O(K log K).</p>
 
@@ -266,7 +265,7 @@ Many of these solutions take time and effort to implement, are limited by data c
 
 <p>The next data structure we considered was a trie. Tries were interesting to us from the get-go as they happen to be a natural fit for prefix search, as it allows for O(L) lookup of a prefix (L being the length of the prefix!). It also takes up less space than the naive hash, as all descendents of a given node share the node as a common prefix. We also don’t need to accommodate extra space for the hash’s load factor.</p>
 
-<p><strong>##open####open##</strong> trie img <strong>##open####open##</strong></p>
+<p><img src="/assets/naive-trie.png" alt="naive trie" /></p>
 
 <p>Looks like a good choice so far, but how would searching for completions work? Let’s look at the steps required:</p>
 

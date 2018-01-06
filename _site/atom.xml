@@ -4,7 +4,7 @@
  <title>Prefixy</title>
  <link href="http://localhost:4000/atom.xml" rel="self"/>
  <link href="http://localhost:4000/"/>
- <updated>2018-01-06T14:51:27-08:00</updated>
+ <updated>2018-01-06T14:52:57-08:00</updated>
  <id>http://localhost:4000</id>
  <author>
    <name>Mark Otto</name>
@@ -129,8 +129,7 @@ Many of these solutions take time and effort to implement, are limited by data c
 
 &lt;p&gt;&lt;strong&gt;selection&lt;/strong&gt; - The suggestion that the user chooses or a new completion that the user submits.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/assets/terms.gif&quot; alt=&quot;terminology&quot; /&gt;
-&lt;strong&gt;##open####open##&lt;/strong&gt; update image &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/terminology.png&quot; alt=&quot;terminology&quot; /&gt;&lt;/p&gt;
 
 &lt;h2 id=&quot;design-goals&quot;&gt;Design goals&lt;/h2&gt;
 
@@ -163,7 +162,7 @@ Many of these solutions take time and effort to implement, are limited by data c
 
 &lt;p&gt;The first data structure we considered was a hash table, in which we store all of the completions as keys and their scores as values.&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; naive hash image &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/naive-hash.png&quot; alt=&quot;naive hash&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;First, we analyzed the time complexity of searching for completions for a given prefix with this approach. Here are the required steps:&lt;/p&gt;
 
@@ -173,7 +172,7 @@ Many of these solutions take time and effort to implement, are limited by data c
   &lt;li&gt;Sort the completions we’ve found O(K log K) (sorting our array of matches)&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; searching naive hash img &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/naive-hash-search.png&quot; alt=&quot;naive hash&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;This means the time complexity of search would be O(NL) + O(K log K).&lt;/p&gt;
 
@@ -185,7 +184,7 @@ Many of these solutions take time and effort to implement, are limited by data c
 
 &lt;p&gt;The next data structure we considered was a trie. Tries were interesting to us from the get-go as they happen to be a natural fit for prefix search, as it allows for O(L) lookup of a prefix (L being the length of the prefix!). It also takes up less space than the naive hash, as all descendents of a given node share the node as a common prefix. We also don’t need to accommodate extra space for the hash’s load factor.&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; trie img &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/naive-trie.png&quot; alt=&quot;naive trie&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Looks like a good choice so far, but how would searching for completions work? Let’s look at the steps required:&lt;/p&gt;
 
