@@ -4,7 +4,7 @@
  <title>Prefixy</title>
  <link href="http://localhost:4000/atom.xml" rel="self"/>
  <link href="http://localhost:4000/"/>
- <updated>2018-01-06T15:00:37-08:00</updated>
+ <updated>2018-01-06T15:24:29-08:00</updated>
  <id>http://localhost:4000</id>
  <author>
    <name>Mark Otto</name>
@@ -73,6 +73,7 @@
   &lt;/li&gt;
   &lt;li&gt;&lt;a href=&quot;#future-plans&quot; id=&quot;markdown-toc-future-plans&quot;&gt;Future Plans&lt;/a&gt;    &lt;ul&gt;
       &lt;li&gt;&lt;a href=&quot;#custom-configurability-of-l-and-k&quot; id=&quot;markdown-toc-custom-configurability-of-l-and-k&quot;&gt;Custom configurability of L and K&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#scaling-redis-to-minimize-cache-misses-and-benchmarking-persistence-strategy&quot; id=&quot;markdown-toc-scaling-redis-to-minimize-cache-misses-and-benchmarking-persistence-strategy&quot;&gt;Scaling Redis to minimize cache misses, and benchmarking persistence strategy&lt;/a&gt;&lt;/li&gt;
       &lt;li&gt;&lt;a href=&quot;#scripting-redis-to-reduce-network-requests&quot; id=&quot;markdown-toc-scripting-redis-to-reduce-network-requests&quot;&gt;Scripting Redis to reduce network requests&lt;/a&gt;&lt;/li&gt;
       &lt;li&gt;&lt;a href=&quot;#api-rate-limiter&quot; id=&quot;markdown-toc-api-rate-limiter&quot;&gt;API rate limiter&lt;/a&gt;&lt;/li&gt;
     &lt;/ul&gt;
@@ -119,6 +120,8 @@ Many of these solutions take time and effort to implement, are limited by data c
 
 &lt;p&gt;Before we go further, there is certain terminology we used as we built this project that will be helpful in understanding the rest of this post. Consider the following definitions along with the diagram below:&lt;/p&gt;
 
+&lt;p&gt;&lt;img src=&quot;/assets/terminology.png&quot; alt=&quot;terminology&quot; /&gt;&lt;/p&gt;
+
 &lt;p&gt;&lt;strong&gt;prefix&lt;/strong&gt; - What the user has typed so far.&lt;/p&gt;
 
 &lt;p&gt;&lt;strong&gt;completions&lt;/strong&gt; - All possible ways a given prefix can be completed in order to form a valid word or phrase.&lt;/p&gt;
@@ -128,8 +131,6 @@ Many of these solutions take time and effort to implement, are limited by data c
 &lt;p&gt;&lt;strong&gt;score&lt;/strong&gt; - An integer representing the popularity of a given completion.&lt;/p&gt;
 
 &lt;p&gt;&lt;strong&gt;selection&lt;/strong&gt; - The suggestion that the user chooses or a new completion that the user submits.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/terminology.png&quot; alt=&quot;terminology&quot; /&gt;&lt;/p&gt;
 
 &lt;h2 id=&quot;design-goals&quot;&gt;Design goals&lt;/h2&gt;
 
@@ -166,12 +167,10 @@ Many of these solutions take time and effort to implement, are limited by data c
 
 &lt;p&gt;First, we analyzed the time complexity of searching for completions for a given prefix with this approach. Here are the required steps:&lt;/p&gt;
 
-&lt;ol&gt;
-  &lt;li&gt;Iterate through all of the keys: O(N)&lt;/li&gt;
-  &lt;li&gt;For each completion, compare to the prefix to check for match: O(L)&lt;/li&gt;
-  &lt;li&gt;Sort the completions we’ve found O(K log K) (sorting our array of matches)&lt;/li&gt;
-&lt;/ol&gt;
-
+&lt;!-- 1. Iterate through all of the keys: O(N)
+2. For each completion, compare to the prefix to check for match: O(L)
+3. Sort the completions we’ve found O(K log K) (sorting our array of matches)
+ --&gt;
 &lt;p&gt;&lt;img src=&quot;/assets/naive-hash-search.png&quot; alt=&quot;naive hash&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;This means the time complexity of search would be O(NL) + O(K log K).&lt;/p&gt;
@@ -223,13 +222,17 @@ Many of these solutions take time and effort to implement, are limited by data c
 
 &lt;p&gt;There are diminishing returns to storing longer and longer prefixes. We can reasonably limit the max length of prefixes we store. Take for example the following completion:&lt;/p&gt;
 
-&lt;p&gt;“Tyrannosaurus Rex lived during the late Cretaceous period.”&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;“Tyrannosaurus Rex lived during the late Cretaceous period.”&lt;/p&gt;
+&lt;/blockquote&gt;
 
 &lt;p&gt;We can reasonably expect that very few people will type a very long prefix such as:&lt;/p&gt;
 
-&lt;p&gt;“Tyrannosaurus Rex lived during the late C”&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;“Tyrannosaurus Rex lived during the late C”&lt;/p&gt;
+&lt;/blockquote&gt;
 
-&lt;p&gt;Instead, it’s much more likely that a user would type “Tyranno” or “Tyrannosaurus Rex l” and then choose a suggestion. Therefore, we can safely put a limit on the length of prefixes we store. We can set this limit to a reasonable amount like 20 characters.&lt;/p&gt;
+&lt;p&gt;Instead, it’s much more likely that a user would type &lt;code class=&quot;highlighter-rouge&quot;&gt;“Tyranno”&lt;/code&gt; or &lt;code class=&quot;highlighter-rouge&quot;&gt;“Tyrannosaurus Rex l”&lt;/code&gt; and then choose a suggestion. Therefore, we can safely put a limit on the length of prefixes we store. We can set this limit to a reasonable amount like 20 characters.&lt;/p&gt;
 
 &lt;p&gt;This has two benefits. For one, we save space because we don’t have to store prefixes longer than the limit and the completions associated with those superfluous prefixes. The second and primary benefit, is that now the O(L) time to find the prefix effectively becomes constant O(1) time. And this is true because L will never be more than the constant limit.&lt;/p&gt;
 
@@ -462,8 +465,8 @@ Whenever we make a change in Redis we wait for it to finish before persisting th
 
 &lt;p&gt;While these numbers work, we want to eventually allow the app developer to specify L and K if they so choose. It’s impossible for us to predict every possible use case someone might want to use Prefixy for, so giving the app developer the option of customizing L and K would be a nice feature to have.&lt;/p&gt;
 
-&lt;p&gt;###Scaling Redis to minimize cache misses and benchmarking persistence strategy
-Recall that if we run out of memory, we evict the least recently used prefixes in Redis but still keep them in MongoDB. In the event that a user does search for an evicted prefix, we get the prefix from MongoDB and put it back into Redis. Now whenever someone searches for the same prefix again, we’ll be able to get it for them straight from Redis.&lt;/p&gt;
+&lt;h3 id=&quot;scaling-redis-to-minimize-cache-misses-and-benchmarking-persistence-strategy&quot;&gt;Scaling Redis to minimize cache misses, and benchmarking persistence strategy&lt;/h3&gt;
+&lt;p&gt;Recall that if we run out of memory, we evict the least recently used prefixes in Redis but still keep them in MongoDB. In the event that a user does search for an evicted prefix, we get the prefix from MongoDB and put it back into Redis. Now whenever someone searches for the same prefix again, we’ll be able to get it for them straight from Redis.&lt;/p&gt;
 
 &lt;p&gt;Right now, Prefixy is technically still in beta mode. We currently have 25MB of RAM for Redis and 496MB of hard-disk space for MongoDB, giving us a 20:1 ratio of hard disk space to memory.. With this ratio, suggestions already appear to return near instantaneously and therefore we have not yet done any testing to find the ideal ratio of memory to hard-disk space.&lt;/p&gt;
 

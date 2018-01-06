@@ -159,6 +159,7 @@
   </li>
   <li><a href="#future-plans" id="markdown-toc-future-plans">Future Plans</a>    <ul>
       <li><a href="#custom-configurability-of-l-and-k" id="markdown-toc-custom-configurability-of-l-and-k">Custom configurability of L and K</a></li>
+      <li><a href="#scaling-redis-to-minimize-cache-misses-and-benchmarking-persistence-strategy" id="markdown-toc-scaling-redis-to-minimize-cache-misses-and-benchmarking-persistence-strategy">Scaling Redis to minimize cache misses, and benchmarking persistence strategy</a></li>
       <li><a href="#scripting-redis-to-reduce-network-requests" id="markdown-toc-scripting-redis-to-reduce-network-requests">Scripting Redis to reduce network requests</a></li>
       <li><a href="#api-rate-limiter" id="markdown-toc-api-rate-limiter">API rate limiter</a></li>
     </ul>
@@ -205,6 +206,8 @@ Many of these solutions take time and effort to implement, are limited by data c
 
 <p>Before we go further, there is certain terminology we used as we built this project that will be helpful in understanding the rest of this post. Consider the following definitions along with the diagram below:</p>
 
+<p><img src="/assets/terminology.png" alt="terminology" /></p>
+
 <p><strong>prefix</strong> - What the user has typed so far.</p>
 
 <p><strong>completions</strong> - All possible ways a given prefix can be completed in order to form a valid word or phrase.</p>
@@ -214,8 +217,6 @@ Many of these solutions take time and effort to implement, are limited by data c
 <p><strong>score</strong> - An integer representing the popularity of a given completion.</p>
 
 <p><strong>selection</strong> - The suggestion that the user chooses or a new completion that the user submits.</p>
-
-<p><img src="/assets/terminology.png" alt="terminology" /></p>
 
 <h2 id="design-goals">Design goals</h2>
 
@@ -252,12 +253,10 @@ Many of these solutions take time and effort to implement, are limited by data c
 
 <p>First, we analyzed the time complexity of searching for completions for a given prefix with this approach. Here are the required steps:</p>
 
-<ol>
-  <li>Iterate through all of the keys: O(N)</li>
-  <li>For each completion, compare to the prefix to check for match: O(L)</li>
-  <li>Sort the completions we’ve found O(K log K) (sorting our array of matches)</li>
-</ol>
-
+<!-- 1. Iterate through all of the keys: O(N)
+2. For each completion, compare to the prefix to check for match: O(L)
+3. Sort the completions we’ve found O(K log K) (sorting our array of matches)
+ -->
 <p><img src="/assets/naive-hash-search.png" alt="naive hash" /></p>
 
 <p>This means the time complexity of search would be O(NL) + O(K log K).</p>
@@ -309,13 +308,17 @@ Many of these solutions take time and effort to implement, are limited by data c
 
 <p>There are diminishing returns to storing longer and longer prefixes. We can reasonably limit the max length of prefixes we store. Take for example the following completion:</p>
 
-<p>“Tyrannosaurus Rex lived during the late Cretaceous period.”</p>
+<blockquote>
+  <p>“Tyrannosaurus Rex lived during the late Cretaceous period.”</p>
+</blockquote>
 
 <p>We can reasonably expect that very few people will type a very long prefix such as:</p>
 
-<p>“Tyrannosaurus Rex lived during the late C”</p>
+<blockquote>
+  <p>“Tyrannosaurus Rex lived during the late C”</p>
+</blockquote>
 
-<p>Instead, it’s much more likely that a user would type “Tyranno” or “Tyrannosaurus Rex l” and then choose a suggestion. Therefore, we can safely put a limit on the length of prefixes we store. We can set this limit to a reasonable amount like 20 characters.</p>
+<p>Instead, it’s much more likely that a user would type <code class="highlighter-rouge">“Tyranno”</code> or <code class="highlighter-rouge">“Tyrannosaurus Rex l”</code> and then choose a suggestion. Therefore, we can safely put a limit on the length of prefixes we store. We can set this limit to a reasonable amount like 20 characters.</p>
 
 <p>This has two benefits. For one, we save space because we don’t have to store prefixes longer than the limit and the completions associated with those superfluous prefixes. The second and primary benefit, is that now the O(L) time to find the prefix effectively becomes constant O(1) time. And this is true because L will never be more than the constant limit.</p>
 
@@ -548,8 +551,8 @@ Whenever we make a change in Redis we wait for it to finish before persisting th
 
 <p>While these numbers work, we want to eventually allow the app developer to specify L and K if they so choose. It’s impossible for us to predict every possible use case someone might want to use Prefixy for, so giving the app developer the option of customizing L and K would be a nice feature to have.</p>
 
-<p>###Scaling Redis to minimize cache misses and benchmarking persistence strategy
-Recall that if we run out of memory, we evict the least recently used prefixes in Redis but still keep them in MongoDB. In the event that a user does search for an evicted prefix, we get the prefix from MongoDB and put it back into Redis. Now whenever someone searches for the same prefix again, we’ll be able to get it for them straight from Redis.</p>
+<h3 id="scaling-redis-to-minimize-cache-misses-and-benchmarking-persistence-strategy">Scaling Redis to minimize cache misses, and benchmarking persistence strategy</h3>
+<p>Recall that if we run out of memory, we evict the least recently used prefixes in Redis but still keep them in MongoDB. In the event that a user does search for an evicted prefix, we get the prefix from MongoDB and put it back into Redis. Now whenever someone searches for the same prefix again, we’ll be able to get it for them straight from Redis.</p>
 
 <p>Right now, Prefixy is technically still in beta mode. We currently have 25MB of RAM for Redis and 496MB of hard-disk space for MongoDB, giving us a 20:1 ratio of hard disk space to memory.. With this ratio, suggestions already appear to return near instantaneously and therefore we have not yet done any testing to find the ideal ratio of memory to hard-disk space.</p>
 
