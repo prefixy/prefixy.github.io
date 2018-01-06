@@ -103,7 +103,7 @@
   Your browser does not support the video tag.
 </video> -->
 
-<p><strong>This is the story of how Prefixy was built, a highly scalable, query optimized, hosted prefix search service for building autocomplete suggestions.</strong></p>
+<p><strong>This is the story of how we built Prefixy: a highly scalable, query optimized, hosted prefix search service for building autocomplete suggestions.</strong></p>
 
 <h2 class="no_toc" id="table-of-contents">Table of Contents</h2>
 
@@ -327,7 +327,7 @@ Many of these solutions take time and effort to implement, are limited by data c
 
 <h3 id="prefix-hash-tree">Prefix hash tree</h3>
 
-<p>There’s one last optimization we can make. We can map the trie’s prefixes with the completions stored at each node to a hash in a data structure that has been referred to as a Prefix Hash Tree (our confidence in this approach was bolstered by <a href="https://people.eecs.berkeley.edu/~sylvia/papers/pht.pdf">this paper</a> which used utilized this to distribute a trie).</p>
+<p>There’s one last optimization we can make. We can map the trie’s prefixes with the completions stored at each node to a hash in a data structure that has been referred to as a Prefix Hash Tree (our confidence in this approach was bolstered by <a href="https://people.eecs.berkeley.edu/~sylvia/papers/pht.pdf" target="_blank">this paper</a> which used utilized this to distribute a trie).</p>
 
 <p><strong>##open####open##</strong> prefix hash tree img <strong>##open####open##</strong></p>
 
@@ -402,7 +402,7 @@ Many of these solutions take time and effort to implement, are limited by data c
 
 <p>As we discussed, incrementing a score in a Redis Sorted Set is straightforward. We can simply use the <code class="highlighter-rouge">ZINCRBY</code> command. If the completion specified already exists in the sorted set, its score will be incremented. If the completion specified does not exist yet in the sorted set, it will be added.</p>
 
-<p>Remember though that we decided to place a limit on K (the number of completions in a bucket). So we need to have logic in our application to maintain the bucket limit. Here we are indebted to Salvatore Sanfilippo, the creator of Redis, who suggested an algorithm to do this in <a href="http://oldblog.antirez.com/post/autocomplete-with-redis.html">his blog</a>. The procedure is as follows: 
+<p>Remember though that we decided to place a limit on K (the number of completions in a bucket). So we need to have logic in our application to maintain the bucket limit. Here we are indebted to Salvatore Sanfilippo, the creator of Redis, who suggested an algorithm to do this in <a href="http://oldblog.antirez.com/post/autocomplete-with-redis.html" target="_blank">his blog</a>. The procedure is as follows: 
 When the bucket is full and the completion is not yet in the bucket, remove the completion with the lowest score.
 Add the new completion with the removed completion’s score plus 1.</p>
 
@@ -577,9 +577,10 @@ We’re okay with these multiple network requests, since incrementing is a write
 (names with our locations and personal websites)</p>
 
 <h2 id="references">References</h2>
-<p><strong>##open####open##</strong> <strong>##open####open##</strong>
-Antirez Redis Autocomplete article
-Prefix Hash Tree paper</p>
+
+<p><a href="http://oldblog.antirez.com/post/autocomplete-with-redis.html" target="_blank">Auto Complete with Redis</a> - This post by Salvatore Sanfilippo, the creator of Redis, demonstrated the feasibility of using Redis to power autocomplete, and was a crucial source of inspiration for the idea of using Redis Sorted Sets and how to handle the ranking logic.</p>
+
+<p><a href="https://people.eecs.berkeley.edu/~sylvia/papers/pht.pdf" target="_blank">Prefix Hash Tree</a> - This paper demonstrates the idea of distributing a trie over a Distributed Hash Table. While our use case was different in that we were not distributing a trie, it bolstered our idea of mapping a trie to a hash.</p>
 
 
 </div>

@@ -4,7 +4,7 @@
  <title>Prefixy</title>
  <link href="http://localhost:4000/atom.xml" rel="self"/>
  <link href="http://localhost:4000/"/>
- <updated>2018-01-06T13:02:48-05:00</updated>
+ <updated>2018-01-06T14:08:56-05:00</updated>
  <id>http://localhost:4000</id>
  <author>
    <name>Mark Otto</name>
@@ -22,7 +22,7 @@
   Your browser does not support the video tag.
 &lt;/video&gt; --&gt;
 
-&lt;p&gt;&lt;strong&gt;This is the story of how Prefixy was built, a highly scalable, query optimized, hosted prefix search service for building autocomplete suggestions.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;This is the story of how we built Prefixy: a highly scalable, query optimized, hosted prefix search service for building autocomplete suggestions.&lt;/strong&gt;&lt;/p&gt;
 
 &lt;h2 class=&quot;no_toc&quot; id=&quot;table-of-contents&quot;&gt;Table of Contents&lt;/h2&gt;
 
@@ -246,7 +246,7 @@ Many of these solutions take time and effort to implement, are limited by data c
 
 &lt;h3 id=&quot;prefix-hash-tree&quot;&gt;Prefix hash tree&lt;/h3&gt;
 
-&lt;p&gt;There’s one last optimization we can make. We can map the trie’s prefixes with the completions stored at each node to a hash in a data structure that has been referred to as a Prefix Hash Tree (our confidence in this approach was bolstered by &lt;a href=&quot;https://people.eecs.berkeley.edu/~sylvia/papers/pht.pdf&quot;&gt;this paper&lt;/a&gt; which used utilized this to distribute a trie).&lt;/p&gt;
+&lt;p&gt;There’s one last optimization we can make. We can map the trie’s prefixes with the completions stored at each node to a hash in a data structure that has been referred to as a Prefix Hash Tree (our confidence in this approach was bolstered by &lt;a href=&quot;https://people.eecs.berkeley.edu/~sylvia/papers/pht.pdf&quot; target=&quot;_blank&quot;&gt;this paper&lt;/a&gt; which used utilized this to distribute a trie).&lt;/p&gt;
 
 &lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; prefix hash tree img &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
 
@@ -321,7 +321,7 @@ Many of these solutions take time and effort to implement, are limited by data c
 
 &lt;p&gt;As we discussed, incrementing a score in a Redis Sorted Set is straightforward. We can simply use the &lt;code class=&quot;highlighter-rouge&quot;&gt;ZINCRBY&lt;/code&gt; command. If the completion specified already exists in the sorted set, its score will be incremented. If the completion specified does not exist yet in the sorted set, it will be added.&lt;/p&gt;
 
-&lt;p&gt;Remember though that we decided to place a limit on K (the number of completions in a bucket). So we need to have logic in our application to maintain the bucket limit. Here we are indebted to Salvatore Sanfilippo, the creator of Redis, who suggested an algorithm to do this in &lt;a href=&quot;http://oldblog.antirez.com/post/autocomplete-with-redis.html&quot;&gt;his blog&lt;/a&gt;. The procedure is as follows: 
+&lt;p&gt;Remember though that we decided to place a limit on K (the number of completions in a bucket). So we need to have logic in our application to maintain the bucket limit. Here we are indebted to Salvatore Sanfilippo, the creator of Redis, who suggested an algorithm to do this in &lt;a href=&quot;http://oldblog.antirez.com/post/autocomplete-with-redis.html&quot; target=&quot;_blank&quot;&gt;his blog&lt;/a&gt;. The procedure is as follows: 
 When the bucket is full and the completion is not yet in the bucket, remove the completion with the lowest score.
 Add the new completion with the removed completion’s score plus 1.&lt;/p&gt;
 
@@ -496,9 +496,10 @@ We’re okay with these multiple network requests, since incrementing is a write
 (names with our locations and personal websites)&lt;/p&gt;
 
 &lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
-&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; &lt;strong&gt;##open####open##&lt;/strong&gt;
-Antirez Redis Autocomplete article
-Prefix Hash Tree paper&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://oldblog.antirez.com/post/autocomplete-with-redis.html&quot; target=&quot;_blank&quot;&gt;Auto Complete with Redis&lt;/a&gt; - This post by Salvatore Sanfilippo, the creator of Redis, demonstrated the feasibility of using Redis to power autocomplete, and was a crucial source of inspiration for the idea of using Redis Sorted Sets and how to handle the ranking logic.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://people.eecs.berkeley.edu/~sylvia/papers/pht.pdf&quot; target=&quot;_blank&quot;&gt;Prefix Hash Tree&lt;/a&gt; - This paper demonstrates the idea of distributing a trie over a Distributed Hash Table. While our use case was different in that we were not distributing a trie, it bolstered our idea of mapping a trie to a hash.&lt;/p&gt;
 
 </content>
  </entry>
