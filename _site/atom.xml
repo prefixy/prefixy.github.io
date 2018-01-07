@@ -4,7 +4,7 @@
  <title>Prefixy</title>
  <link href="http://localhost:4000/atom.xml" rel="self"/>
  <link href="http://localhost:4000/"/>
- <updated>2018-01-07T07:59:05-05:00</updated>
+ <updated>2018-01-07T09:28:52-05:00</updated>
  <id>http://localhost:4000</id>
  <author>
    <name>Mark Otto</name>
@@ -196,21 +196,23 @@ Many of these solutions take time and effort to implement, are limited by data c
   &lt;li&gt;L - the length of the prefix we are looking up&lt;/li&gt;
 &lt;/ul&gt;
 
+&lt;p&gt;To walk through the different data structures, we’ll use the following completions and corresponding scores to help visualize these data structures in our diagrams:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/completions-with-scores.png&quot; alt=&quot;completions with scores&quot; /&gt;&lt;/p&gt;
+
 &lt;h3 id=&quot;naive-hash&quot;&gt;Naive hash&lt;/h3&gt;
 
 &lt;p&gt;The first data structure we considered was a hash table, in which we store all of the completions as keys and their scores as values.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/naive-hash.png&quot; alt=&quot;naive hash&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;First, we analyzed the time complexity of searching for completions for a given prefix with this approach. Here are the required steps:&lt;/p&gt;
+&lt;p&gt;First, we analyzed the time complexity of searching for completions for a given prefix with this approach.&lt;/p&gt;
 
-&lt;!-- 1. Iterate through all of the keys: O(N)
-2. For each completion, compare to the prefix to check for match: O(L)
-3. Sort the completions we’ve found O(K log K) (sorting our array of matches)
- --&gt;
+&lt;p&gt;Let’s say we’re searching for all completions that match the prefix “ca”:&lt;/p&gt;
+
 &lt;p&gt;&lt;img src=&quot;/assets/naive-hash-search.png&quot; alt=&quot;naive hash&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;This means the time complexity of search would be O(NL) + O(K log K).&lt;/p&gt;
+&lt;p&gt;This means the time complexity of search would be &lt;strong&gt;O(NL) + O(K log K)&lt;/strong&gt;.&lt;/p&gt;
 
 &lt;p&gt;The main bottleneck of this approach is the O(N) check of all keys. As our data grows in size, this is far too slow to support our requirements. (Imagine how quickly the number of keys will grow when the service is powering thousands of autocompletes, capturing any new completions entered!)&lt;/p&gt;
 
@@ -222,17 +224,15 @@ Many of these solutions take time and effort to implement, are limited by data c
 
 &lt;p&gt;&lt;img src=&quot;/assets/naive-trie.png&quot; alt=&quot;naive trie&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;Looks like a good choice so far, but how would searching for completions work? Let’s look at the steps required:&lt;/p&gt;
+&lt;p&gt;Visualized slightly differently, we can see how each node builds on its parent node:&lt;/p&gt;
 
-&lt;ol&gt;
-  &lt;li&gt;Find the prefix O(L)&lt;/li&gt;
-  &lt;li&gt;Find all completions (and put them into an array) O(N)&lt;/li&gt;
-  &lt;li&gt;Sort the completions O(K log K)&lt;/li&gt;
-&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/naive-trie-different.png&quot; alt=&quot;naive trie different&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; trie search img &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Looks like a good choice so far, but how would searching for completions work? Let’s look at the steps required for our “ca” prefix search:&lt;/p&gt;
 
-&lt;p&gt;Therefore the total time complexity for search is O(L) + O(N) + O(K log K), with the bottleneck again being O(N).&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/naive-trie-search.png&quot; alt=&quot;naive trie search&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Therefore the total time complexity for search is &lt;strong&gt;O(L) + O(N) + O(K log K)&lt;/strong&gt;, with the bottleneck again being O(N).&lt;/p&gt;
 
 &lt;p&gt;You may be wondering, “why it is O(N) for finding the completions?” This is because after finding the prefix node, you still have to traverse down to all of its child nodes to find its completions. Although often this would technically not be every node, as the longer the prefix, there are ostensibly fewer child nodes to traverse down to.&lt;/p&gt;
 
@@ -244,14 +244,10 @@ Many of these solutions take time and effort to implement, are limited by data c
 
 &lt;p&gt;Now, it takes just two steps to get the completions for a prefix:&lt;/p&gt;
 
-&lt;ol&gt;
-  &lt;li&gt;Find the prefix node O(L)&lt;/li&gt;
-  &lt;li&gt;Sort the completions at that node O(K log K)&lt;/li&gt;
-&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/trie-completions-search.png&quot; alt=&quot;trie completions search&quot; /&gt;
+&lt;em&gt;*some scores omitted for presentation purposes&lt;/em&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; trie completions search img &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;The time complexity is now significantly better, but this does come at a cost. We consume more space duplicating the completions for each prefix and require more writes to keep our completions up to date. But since speed is our priority, this is a trade off we are happy to make.&lt;/p&gt;
+&lt;p&gt;The time complexity is now significantly better, as it is no longer bottlenecked by the N, but this does come at a cost. We consume more space duplicating the completions for each prefix and require more writes to keep our completions up to date. But since speed is our priority, this is a trade off we are happy to make.&lt;/p&gt;
 
 &lt;p&gt;But can we do better than this? As you’re about to see, there are indeed further optimizations we can make that will improve time and space complexity significantly.&lt;/p&gt;
 
@@ -287,7 +283,7 @@ Many of these solutions take time and effort to implement, are limited by data c
 
 &lt;p&gt;There’s one last optimization we can make. We can map the trie’s prefixes with the completions stored at each node to a hash in a data structure that has been referred to as a Prefix Hash Tree (our confidence in this approach was bolstered by &lt;a href=&quot;https://people.eecs.berkeley.edu/~sylvia/papers/pht.pdf&quot; target=&quot;_blank&quot;&gt;this paper&lt;/a&gt; which used utilized this to distribute a trie).&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; prefix hash tree img &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/prefix-hash-tree.png&quot; alt=&quot;prefix hash tree&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Basically, we map every node of the trie to a key in a hash. We also map the completions stored at that node to that key’s value.&lt;/p&gt;
 
@@ -299,7 +295,7 @@ Many of these solutions take time and effort to implement, are limited by data c
 
 &lt;p&gt;The following table summarizes our data structure analysis:&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; big O summary table &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/big-o-summary.png&quot; alt=&quot;big o summary&quot; /&gt;&lt;/p&gt;
 
 &lt;h3 id=&quot;enter-redis&quot;&gt;Enter Redis&lt;/h3&gt;
 &lt;p&gt;As we mentioned, one of the benefits of the prefix hash tree is that it can easily map to a key/value NoSQL database. In our case, we chose to use Redis. Redis is a great match for our requirements for several reasons.&lt;/p&gt;
@@ -308,7 +304,7 @@ Many of these solutions take time and effort to implement, are limited by data c
 
 &lt;p&gt;Secondly, Redis provides us with a variety of native in-memory data structures. So we can store prefixes as Redis keys. The key’s value will be that prefix’s completions, which we can store in one of these native in-memory data structures. But which Redis data structure should we use to store completions?&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; which Redis data struc img &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/why-redis.png&quot; alt=&quot;why redis&quot; /&gt;&lt;/p&gt;
 
 &lt;h3 id=&quot;comparing-redis-data-structures&quot;&gt;Comparing Redis data structures&lt;/h3&gt;
 
@@ -318,13 +314,13 @@ Many of these solutions take time and effort to implement, are limited by data c
 
 &lt;p&gt;Because each list node can only hold a string, we would need to store the score of the completion as part of the completion string.&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; Redis list img &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/redis-list.png&quot; alt=&quot;redis list&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;One key function of our system is search (to get the suggestions for a prefix). Another key function is increment (to increase the score of a completion). Let’s examine how each of these functions would work if we choose the list data structure.&lt;/p&gt;
 
 &lt;p&gt;Search is quite straightforward with a list. In order to get the top suggestions for a given prefix, all we do is issue a single Redis &lt;code class=&quot;highlighter-rouge&quot;&gt;LRANGE&lt;/code&gt; command. As long as we keep each list sorted, the top suggestions will always be at the head of a list. This means that we can access any prefix’s suggestions in O(1) time.&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; Redis list search img &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/redis-list-search.png&quot; alt=&quot;redis list search&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;The increment logic, on the other hand, is quite cumbersome. It requires the following steps:&lt;/p&gt;
 
@@ -336,7 +332,11 @@ Many of these solutions take time and effort to implement, are limited by data c
   &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;LINSERT&lt;/code&gt; to insert completion in its new position: O(K)&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; Redis list increment slide gif &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/redis-list-increment-1.png&quot; alt=&quot;redis list increment 1&quot; /&gt;
+&lt;img src=&quot;/assets/redis-list-increment-2.png&quot; alt=&quot;redis list increment 2&quot; /&gt;
+&lt;img src=&quot;/assets/redis-list-increment-3.png&quot; alt=&quot;redis list increment 3&quot; /&gt;
+&lt;img src=&quot;/assets/redis-list-increment-4.png&quot; alt=&quot;redis list increment 4&quot; /&gt;
+&lt;img src=&quot;/assets/redis-list-increment-5.png&quot; alt=&quot;redis list increment 5&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;There are several disadvantages to this algorithm. The overall time complexity is O(K), and requires at least two round trips to Redis. The algorithm requires a large payload in the first request, as we need to retrieve the entire list. We need to do the sorting in our application, rather than in the database. There is no uniqueness guarantee for our data, which we need in order to maintain accurate scores. And we may run into concurrency issues with this many steps for the update logic.&lt;/p&gt;
 
@@ -344,15 +344,19 @@ Many of these solutions take time and effort to implement, are limited by data c
 
 &lt;h4 id=&quot;sorted-set&quot;&gt;Sorted set&lt;/h4&gt;
 
-&lt;p&gt;Next, we considered using the Redis Sorted Set for storing completions. The sorted set is a collection of items. Each item consists of a string and its corresponding score. Items in the sorted set maintain order by score. Items with the same score are sorted lexicographically. Additionally, uniqueness of values is maintained. All of these features are a very good match for the structure of our data! Now let’s examine how each of our key functions would work.&lt;/p&gt;
+&lt;p&gt;Next, we considered using the Redis Sorted Set for storing completions. The sorted set is a collection of items. Each item consists of a string and its corresponding score. Items in the sorted set maintain order by score. Items with the same score are sorted lexicographically. Additionally, uniqueness of values is maintained. All of these features are a very good match for the structure of our data!&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/redis-sorted-set.png&quot; alt=&quot;redis sorted set&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Now let’s examine how each of our key functions would work.&lt;/p&gt;
 
 &lt;p&gt;Using the Redis &lt;code class=&quot;highlighter-rouge&quot;&gt;ZRANGE&lt;/code&gt; command, searching for suggestions would happen in O(log K) time. Not quite as efficient as the list, but still extremely fast, especially if we limit K.&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; Redis sorted set search img &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/redis-sorted-set-search.png&quot; alt=&quot;redis sorted set search&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Now let’s look at the increment logic. In most cases, we can accomplish this in a single command! We simply issue a &lt;code class=&quot;highlighter-rouge&quot;&gt;ZINCRBY&lt;/code&gt; command to increment the score of a completion. In Redis, sorted sets are implemented under the hood with a skip list data structure, so this update happens in O(log K) time.&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; Redis sorted set increment img &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/redis-sorted-set-increment.png&quot; alt=&quot;redis sorted set increment&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;In summary, the many benefits of using sorted sets include: fewer round trips to Redis, less chance of concurrency issues, smaller payloads, a uniqueness guarantee, and non-blocking updates. Sorted sets also allow us to maintain the ordering of completions at the database level. This is faster than taking care of order in our application. Search is technically slower than the list, as it is O(log K) rather than O(1). However, logarithmic time is still extremely fast, especially when we limit K. Because of all the above considerations, we ultimately chose to use sorted sets to store completions.&lt;/p&gt;
 
@@ -364,7 +368,7 @@ Many of these solutions take time and effort to implement, are limited by data c
 When the bucket is full and the completion is not yet in the bucket, remove the completion with the lowest score.
 Add the new completion with the removed completion’s score plus 1.&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; bucket maintenance img &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/bucket-limit.png&quot; alt=&quot;bucket limit&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Why use the removed completion’s score plus 1? Simply put, it ensures that a new completion will not be immediately replaced by a subsequent new completion. This is important because if users continue to search for a new completion, we need to provide a way for that completion to be able to rise to the top suggestions. Adding a new completion with the removed completion’s score plus 1, ensures that each new completion gets a shot to rise to the top.&lt;/p&gt;
 
@@ -380,7 +384,7 @@ Add the new completion with the removed completion’s score plus 1.&lt;/p&gt;
 
 &lt;p&gt;Using this model, now when we perform a search, we check Redis first, which will usually have our data (due to the efficacy of the LRU policy). In the case it doesn’t, we check MongoDB, which has the complete set of prefixes.&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; run out of memory img &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/out-of-memory.png&quot; alt=&quot;out of memory&quot; /&gt;&lt;/p&gt;
 
 &lt;h3 id=&quot;why-mongodb&quot;&gt;Why MongoDB&lt;/h3&gt;
 
@@ -423,7 +427,7 @@ Whenever we make a change in Redis we wait for it to finish before persisting th
 
 &lt;p&gt;Our system architecture so far looks like this:&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; system architecture &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/system-architecture-so-far.png&quot; alt=&quot;system architecture so far&quot; /&gt;&lt;/p&gt;
 
 &lt;h3 id=&quot;building-the-service&quot;&gt;Building the service&lt;/h3&gt;
 
@@ -432,7 +436,7 @@ Whenever we make a change in Redis we wait for it to finish before persisting th
 &lt;h3 id=&quot;authentication-setup&quot;&gt;Authentication setup&lt;/h3&gt;
 &lt;p&gt;To implement the service, we added a Token Generator server to our system. We set it up so that the Token Generator server and Prefixy server both share a common secret. This means that the Prefixy server can decrypt any tokens encrypted by the Token Generator server.&lt;/p&gt;
 
-&lt;p&gt;(TOKEN GENERATION + AUTHENTICATION WORKFLOW diagram)&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/token-generation.png&quot; alt=&quot;token generation + auth workflow&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;When a developer requests it, the Token Generator generates a unique tenant ID for her. The tenant ID is then encrypted into a unique JSON web token (JWT). Finally, the token is included in a custom script that initializes the frontend javascript client.&lt;/p&gt;
 
@@ -446,13 +450,13 @@ Whenever we make a change in Redis we wait for it to finish before persisting th
 
 &lt;p&gt;But how do we use the tenant ID to implement multi-tenancy on the backend? Good question! We use the tenant ID for namespacing our data.&lt;/p&gt;
 
-&lt;p&gt;(MULTI-TENANCY WORKFLOW diagram)&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/multi-tenancy.png&quot; alt=&quot;multi tenancy&quot; /&gt;&lt;/p&gt;
 
 &lt;h4 id=&quot;multi-tenancy-in-redis&quot;&gt;Multi-tenancy in Redis&lt;/h4&gt;
 
 &lt;p&gt;In Redis, we prepend every key of a developer’s data with her tenant ID. So on the backend, all of our Redis keys look like this: &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;tenantId&amp;gt;:&amp;lt;prefix&amp;gt;&lt;/code&gt;.&lt;/p&gt;
 
-&lt;p&gt;(MULTI-TENANCY ON THE BACK-END diagram, but ONLY REDIS half)&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/multi-tenancy-back-end-redis.png&quot; alt=&quot;multi tenancy on backend redis&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Now whenever a search request from the developer’s app comes in, we prepend her tenant ID to the search query. The query will now be in the right format (e.g. &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;tenantId&amp;gt;:&amp;lt;prefix&amp;gt;&lt;/code&gt;), and we can simply do a one-to-one key/value lookup.&lt;/p&gt;
 
@@ -467,7 +471,7 @@ Whenever we make a change in Redis we wait for it to finish before persisting th
 &lt;h4 id=&quot;multi-tenancy-in-mongodb&quot;&gt;Multi-tenancy in MongoDB&lt;/h4&gt;
 &lt;p&gt;In MongoDB, we allocate a collection for each tenant ID. Collections are provided to us by MongoDB as a built-in way to namespace our data.&lt;/p&gt;
 
-&lt;p&gt;(MULTI-TENANCY ON THE BACK-END diagram, but ONLY MongoDB half)&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/multi-tenancy-back-end-mongo.png&quot; alt=&quot;multi tenancy on backend mongo&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Now we can call the &lt;code class=&quot;highlighter-rouge&quot;&gt;findOneAndUpdate&lt;/code&gt; method on a collection, in order to insert data into a particular collection. This method ensures that all of the app developer’s data is inserted only within the context of her own allocated collection.&lt;/p&gt;
 

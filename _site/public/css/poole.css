@@ -117,6 +117,10 @@ strong {
 /* Lists */
 ul, ol, dl {
   margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+#markdown-toc ul {
   margin-bottom: 0;
 }
 
