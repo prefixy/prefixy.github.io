@@ -4,7 +4,7 @@
  <title>Prefixy</title>
  <link href="http://localhost:4000/atom.xml" rel="self"/>
  <link href="http://localhost:4000/"/>
- <updated>2018-01-06T15:24:29-08:00</updated>
+ <updated>2018-01-06T19:47:43-05:00</updated>
  <id>http://localhost:4000</id>
  <author>
    <name>Mark Otto</name>
@@ -15,7 +15,7 @@
  <entry>
    <title>Building Prefixy</title>
    <link href="http://localhost:4000/2017/12/13/writeup/"/>
-   <updated>2017-12-13T14:16:01-08:00</updated>
+   <updated>2017-12-13T17:16:01-05:00</updated>
    <id>http://localhost:4000/2017/12/13/writeup</id>
    <content type="html">&lt;!-- &lt;video style=&quot;width:100%&quot; autoplay loop&gt;
   &lt;source src=&quot;/assets/demo.mp4&quot; type=&quot;video/mp4&quot; /&gt;
@@ -29,7 +29,7 @@
 &lt;ul id=&quot;markdown-toc&quot;&gt;
   &lt;li&gt;&lt;a href=&quot;#introduction&quot; id=&quot;markdown-toc-introduction&quot;&gt;Introduction&lt;/a&gt;    &lt;ul&gt;
       &lt;li&gt;&lt;a href=&quot;#what-is-prefixy&quot; id=&quot;markdown-toc-what-is-prefixy&quot;&gt;What is Prefixy?&lt;/a&gt;&lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;#who-are-we&quot; id=&quot;markdown-toc-who-are-we&quot;&gt;Who are we?&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#about-us&quot; id=&quot;markdown-toc-about-us&quot;&gt;About us&lt;/a&gt;&lt;/li&gt;
       &lt;li&gt;&lt;a href=&quot;#takeaways-and-objectives&quot; id=&quot;markdown-toc-takeaways-and-objectives&quot;&gt;Takeaways and objectives&lt;/a&gt;&lt;/li&gt;
       &lt;li&gt;&lt;a href=&quot;#terminology&quot; id=&quot;markdown-toc-terminology&quot;&gt;Terminology&lt;/a&gt;&lt;/li&gt;
     &lt;/ul&gt;
@@ -97,11 +97,48 @@ Many of these solutions take time and effort to implement, are limited by data c
 
 &lt;p&gt;To get an idea of how it works on the frontend, try out the demo below. Notice that as you type, suggestions appear that you can select. Upon pressing Enter, your search is submitted, and depending on the popularity ranking of other suggestions, you may see your search appear higher in the list of suggestions the next time you type.&lt;/p&gt;
 
-&lt;h3 id=&quot;who-are-we&quot;&gt;Who are we?&lt;/h3&gt;
+&lt;h3 id=&quot;about-us&quot;&gt;About us&lt;/h3&gt;
 
 &lt;p&gt;We are a team of three software engineers, who are each looking for new work opportunities. Please don’t hesitate to reach out if we seem like a good fit for your team!&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; need team images and links &lt;strong&gt;##open####open##&lt;/strong&gt;&lt;/p&gt;
+&lt;ul class=&quot;team&quot;&gt;
+  &lt;li class=&quot;team-member&quot;&gt;
+    &lt;a href=&quot;https://tiffanyhan.me/&quot;&gt;
+      &lt;figure&gt;
+        &lt;img alt=&quot;tiffany&quot; src=&quot;/assets/tiffany.jpeg&quot; /&gt;
+      &lt;/figure&gt;
+      &lt;strong&gt;Tiffany Han&lt;/strong&gt;
+      &lt;br /&gt;
+      Software Engineer
+      &lt;br /&gt;
+      (SF)
+    &lt;/a&gt;
+  &lt;/li&gt;
+  &lt;li class=&quot;team-member&quot;&gt;
+    &lt;a href=&quot;https://walidwahed.github.io/&quot;&gt;
+      &lt;figure&gt;
+        &lt;img alt=&quot;walid&quot; src=&quot;/assets/walid.jpeg&quot; /&gt;
+      &lt;/figure&gt;
+      &lt;strong&gt;Walid Wahed&lt;/strong&gt;
+      &lt;br /&gt;
+      Software Engineer
+      &lt;br /&gt;
+      (NYC)
+    &lt;/a&gt;
+  &lt;/li&gt;
+  &lt;li class=&quot;team-member&quot;&gt;
+    &lt;a href=&quot;http://jayshenk.com/&quot;&gt;
+      &lt;figure&gt;
+        &lt;img alt=&quot;jay&quot; src=&quot;/assets/jay.jpeg&quot; /&gt;
+      &lt;/figure&gt;
+      &lt;strong&gt;Jay Shenk&lt;/strong&gt;
+      &lt;br /&gt;
+      Software Engineer
+      &lt;br /&gt;
+      (Dayton)
+    &lt;/a&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
 
 &lt;h3 id=&quot;takeaways-and-objectives&quot;&gt;Takeaways and objectives&lt;/h3&gt;
 
@@ -486,8 +523,44 @@ We’re okay with these multiple network requests, since incrementing is a write
 &lt;h2 id=&quot;questions&quot;&gt;Questions?&lt;/h2&gt;
 &lt;p&gt;Feel free to reach out to us about any questions you have about the project. Each of us on the Prefixy team is currently looking for new work opportunities, so we’d be happy to hear from you if we would be a good candidate to join your team!&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;##open####open##&lt;/strong&gt; &lt;strong&gt;##open####open##&lt;/strong&gt;
-(names with our locations and personal websites)&lt;/p&gt;
+&lt;ul class=&quot;team&quot;&gt;
+  &lt;li class=&quot;team-member&quot;&gt;
+    &lt;a href=&quot;https://walidwahed.github.io/&quot;&gt;
+      &lt;figure&gt;
+        &lt;img alt=&quot;walid&quot; src=&quot;/assets/walid.jpeg&quot; /&gt;
+      &lt;/figure&gt;
+      &lt;strong&gt;Walid Wahed&lt;/strong&gt;
+      &lt;br /&gt;
+      Software Engineer
+      &lt;br /&gt;
+      (NYC)
+    &lt;/a&gt;
+  &lt;/li&gt;
+  &lt;li class=&quot;team-member&quot;&gt;
+    &lt;a href=&quot;http://jayshenk.com/&quot;&gt;
+      &lt;figure&gt;
+        &lt;img alt=&quot;jay&quot; src=&quot;/assets/jay.jpeg&quot; /&gt;
+      &lt;/figure&gt;
+      &lt;strong&gt;Jay Shenk&lt;/strong&gt;
+      &lt;br /&gt;
+      Software Engineer
+      &lt;br /&gt;
+      (Dayton)
+    &lt;/a&gt;
+  &lt;/li&gt;
+  &lt;li class=&quot;team-member&quot;&gt;
+    &lt;a href=&quot;https://tiffanyhan.me/&quot;&gt;
+      &lt;figure&gt;
+        &lt;img alt=&quot;tiffany&quot; src=&quot;/assets/tiffany.jpeg&quot; /&gt;
+      &lt;/figure&gt;
+      &lt;strong&gt;Tiffany Han&lt;/strong&gt;
+      &lt;br /&gt;
+      Software Engineer
+      &lt;br /&gt;
+      (SF)
+    &lt;/a&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
 
 &lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
 
