@@ -13,3 +13,7 @@
 .team-member figure {
   margin: .5%;
 }
+
+.team img {
+  width: 100%;
+}
