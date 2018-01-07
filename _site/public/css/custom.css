@@ -1,0 +1,15 @@
+.team {
+  padding: 0;
+  list-style: none;
+}
+
+.team-member {
+  display: inline-block;
+  width: 32%;
+  vertical-align: top;
+  text-align: center;
+}
+
+.team-member figure {
+  margin: .5%;
+}
