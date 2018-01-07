@@ -43,5 +43,18 @@
         }, false);
       })(document);
     </script>
+      <!-- Prefixy -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://www.prefixy.io/prefixy.js"></script>
+    <script>
+      var myInput = document.getElementById('demo');
+      var myForm = document.getElementById('demo-form');
+
+      new Prefixy({
+        input: myInput,
+        form: myForm,
+        token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnQiOiJkZW1vIiwiaWF0IjoxNTE1Mjk2NDMzfQ.aPyZz-KrbkAV5QjYjY_xQ_LfPg7LHkptKSCCt-0gzlA"
+      });
+    </script>
   </body>
 </html>

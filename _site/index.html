@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="/public/css/lanyon.css">
   <link rel="stylesheet" href="/public/css/custom.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700%7CPT+Sans:400">
+  <link rel="stylesheet" href="https://www.prefixy.io/prefixy.css">
 
   <!-- Icons -->
   <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/public/apple-touch-icon-precomposed.png">
@@ -41,7 +42,7 @@
 <div class="sidebar" id="sidebar">
   <div class="sidebar-item">
     <p>
-      Visit <a href="http://prefixy.io">prefixy.io</a> to get started now.
+      Visit <a href="http://prefixy.io">prefixy.io</a> to try Prefixy.
     </p>
   </div>
 
@@ -70,15 +71,15 @@
     
       
     
-
-    <a class="sidebar-nav-item" href="/archive/v1.0.0.zip">Download</a>
-    <a class="sidebar-nav-item" href="">GitHub project</a>
+<!-- 
+    <a class="sidebar-nav-item" href="/archive/v1.0.0.zip">Download</a> -->
+    <a class="sidebar-nav-item" href="https://github.com/prefixy/prefixy">GitHub project</a>
     <!--<span class="sidebar-nav-item">Currently v1.0.0</span>-->
   </nav>
 
   <div class="sidebar-item">
     <p>MIT Prefixy 2018.</p>
-    <p>Prefixy is an open source project currently in beta mode. Currently v1.0.0.</p>
+    <!-- <p>Prefixy is an open source project currently in beta mode. Currently v1.0.0.</p> -->
   </div>
 </div>
 
@@ -110,6 +111,8 @@
 </video> -->
 
 <p><strong>This is the story of how we built Prefixy: a highly scalable, query optimized, hosted prefix search service for building autocomplete suggestions.</strong></p>
+
+<p>Want to see it in action? Try Prefixy at <a href="https://www.prefixy.io" target="_blank">prefixy.io</a>.</p>
 
 <h2 class="no_toc" id="table-of-contents">Table of Contents</h2>
 
@@ -183,6 +186,10 @@ Many of these solutions take time and effort to implement, are limited by data c
 <p>Prefixy is a hosted prefix search engine that powers autocomplete suggestions. It dynamically updates and ranks suggestions based on popularity. It is an easy to use service that can be used to set up powerful and adaptive autocomplete on any website with just a simple code snippet.</p>
 
 <p>To get an idea of how it works on the frontend, try out the demo below. Notice that as you type, suggestions appear that you can select. Upon pressing Enter, your search is submitted, and depending on the popularity ranking of other suggestions, you may see your search appear higher in the list of suggestions the next time you type.</p>
+
+<form id="demo-form" class="" action="#">
+  <input id="demo" type="search" placeholder="Start typing..." />
+</form>
 
 <h3 id="about-us">About us</h3>
 
@@ -697,6 +704,19 @@ We’re okay with these multiple network requests, since incrementing is a write
           checkbox.checked = false;
         }, false);
       })(document);
+    </script>
+      <!-- Prefixy -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://www.prefixy.io/prefixy.js"></script>
+    <script>
+      var myInput = document.getElementById('demo');
+      var myForm = document.getElementById('demo-form');
+
+      new Prefixy({
+        input: myInput,
+        form: myForm,
+        token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnQiOiJkZW1vIiwiaWF0IjoxNTE1Mjk2NDMzfQ.aPyZz-KrbkAV5QjYjY_xQ_LfPg7LHkptKSCCt-0gzlA"
+      });
     </script>
   </body>
 </html>

@@ -4,7 +4,7 @@
  <title>Prefixy</title>
  <link href="http://localhost:4000/atom.xml" rel="self"/>
  <link href="http://localhost:4000/"/>
- <updated>2018-01-07T09:28:52-05:00</updated>
+ <updated>2018-01-07T10:35:12-05:00</updated>
  <id>http://localhost:4000</id>
  <author>
    <name>Mark Otto</name>
@@ -23,6 +23,8 @@
 &lt;/video&gt; --&gt;
 
 &lt;p&gt;&lt;strong&gt;This is the story of how we built Prefixy: a highly scalable, query optimized, hosted prefix search service for building autocomplete suggestions.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Want to see it in action? Try Prefixy at &lt;a href=&quot;https://www.prefixy.io&quot; target=&quot;_blank&quot;&gt;prefixy.io&lt;/a&gt;.&lt;/p&gt;
 
 &lt;h2 class=&quot;no_toc&quot; id=&quot;table-of-contents&quot;&gt;Table of Contents&lt;/h2&gt;
 
@@ -96,6 +98,10 @@ Many of these solutions take time and effort to implement, are limited by data c
 &lt;p&gt;Prefixy is a hosted prefix search engine that powers autocomplete suggestions. It dynamically updates and ranks suggestions based on popularity. It is an easy to use service that can be used to set up powerful and adaptive autocomplete on any website with just a simple code snippet.&lt;/p&gt;
 
 &lt;p&gt;To get an idea of how it works on the frontend, try out the demo below. Notice that as you type, suggestions appear that you can select. Upon pressing Enter, your search is submitted, and depending on the popularity ranking of other suggestions, you may see your search appear higher in the list of suggestions the next time you type.&lt;/p&gt;
+
+&lt;form id=&quot;demo-form&quot; class=&quot;&quot; action=&quot;#&quot;&gt;
+  &lt;input id=&quot;demo&quot; type=&quot;search&quot; placeholder=&quot;Start typing...&quot; /&gt;
+&lt;/form&gt;
 
 &lt;h3 id=&quot;about-us&quot;&gt;About us&lt;/h3&gt;
 

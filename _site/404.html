@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="/public/css/lanyon.css">
   <link rel="stylesheet" href="/public/css/custom.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700%7CPT+Sans:400">
+  <link rel="stylesheet" href="https://www.prefixy.io/prefixy.css">
 
   <!-- Icons -->
   <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/public/apple-touch-icon-precomposed.png">
@@ -41,7 +42,7 @@
 <div class="sidebar" id="sidebar">
   <div class="sidebar-item">
     <p>
-      Visit <a href="http://prefixy.io">prefixy.io</a> to get started now.
+      Visit <a href="http://prefixy.io">prefixy.io</a> to try Prefixy.
     </p>
   </div>
 
@@ -70,15 +71,15 @@
     
       
     
-
-    <a class="sidebar-nav-item" href="/archive/v1.0.0.zip">Download</a>
-    <a class="sidebar-nav-item" href="">GitHub project</a>
+<!-- 
+    <a class="sidebar-nav-item" href="/archive/v1.0.0.zip">Download</a> -->
+    <a class="sidebar-nav-item" href="https://github.com/prefixy/prefixy">GitHub project</a>
     <!--<span class="sidebar-nav-item">Currently v1.0.0</span>-->
   </nav>
 
   <div class="sidebar-item">
     <p>MIT Prefixy 2018.</p>
-    <p>Prefixy is an open source project currently in beta mode. Currently v1.0.0.</p>
+    <!-- <p>Prefixy is an open source project currently in beta mode. Currently v1.0.0.</p> -->
   </div>
 </div>
 
@@ -122,6 +123,19 @@
           checkbox.checked = false;
         }, false);
       })(document);
+    </script>
+      <!-- Prefixy -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://www.prefixy.io/prefixy.js"></script>
+    <script>
+      var myInput = document.getElementById('demo');
+      var myForm = document.getElementById('demo-form');
+
+      new Prefixy({
+        input: myInput,
+        form: myForm,
+        token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnQiOiJkZW1vIiwiaWF0IjoxNTE1Mjk2NDMzfQ.aPyZz-KrbkAV5QjYjY_xQ_LfPg7LHkptKSCCt-0gzlA"
+      });
     </script>
   </body>
 </html>
