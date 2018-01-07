@@ -4,7 +4,7 @@
  <title>Prefixy</title>
  <link href="http://localhost:4000/atom.xml" rel="self"/>
  <link href="http://localhost:4000/"/>
- <updated>2018-01-07T07:57:31-05:00</updated>
+ <updated>2018-01-07T07:59:05-05:00</updated>
  <id>http://localhost:4000</id>
  <author>
    <name>Mark Otto</name>
@@ -99,7 +99,7 @@ Many of these solutions take time and effort to implement, are limited by data c
 
 &lt;h3 id=&quot;about-us&quot;&gt;About us&lt;/h3&gt;
 
-&lt;p&gt;We are a team of three software engineers, who are each looking for new work opportunities. Please don’t hesitate to reach out if we seem like a good fit for your team!&lt;/p&gt;
+&lt;p&gt;We are a team of three software engineers, who developed this project remotely from across the country. We also happen to be looking for new work opportunities. Please don’t hesitate to reach out if we seem like a good fit for your team!&lt;/p&gt;
 
 &lt;ul class=&quot;team&quot;&gt;
   &lt;li class=&quot;team-member&quot;&gt;
