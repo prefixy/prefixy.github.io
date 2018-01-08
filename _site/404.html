@@ -71,11 +71,68 @@
     
       
     
-<!-- 
+<!--
     <a class="sidebar-nav-item" href="/archive/v1.0.0.zip">Download</a> -->
     <a class="sidebar-nav-item" href="https://github.com/prefixy/prefixy">GitHub project</a>
     <!--<span class="sidebar-nav-item">Currently v1.0.0</span>-->
   </nav>
+
+  <h4 class="no_toc nav-toc-heading" id="table-of-contents">Table of Contents</h2>
+  <ul id="nav-toc">
+    <li><a href="/#introduction" id="markdown-toc-introduction">Introduction</a>    <ul>
+        <li><a href="/#what-is-prefixy" id="markdown-toc-what-is-prefixy">What is Prefixy?</a></li>
+        <li><a href="/#about-us" id="markdown-toc-about-us">About us</a></li>
+        <li><a href="/#takeaways-and-objectives" id="markdown-toc-takeaways-and-objectives">Takeaways and objectives</a></li>
+        <li><a href="/#terminology" id="markdown-toc-terminology">Terminology</a></li>
+      </ul>
+    </li>
+    <li><a href="/#design-goals" id="markdown-toc-design-goals">Design goals</a>    <ul>
+        <li><a href="/#requirements" id="markdown-toc-requirements">Requirements</a></li>
+        <li><a href="/#implications--approach" id="markdown-toc-implications--approach">Implications &amp; approach</a></li>
+      </ul>
+    </li>
+    <li><a href="/#data-structures--algorithms" id="markdown-toc-data-structures--algorithms">Data structures &amp; algorithms</a>    <ul>
+        <li><a href="/#naive-hash" id="markdown-toc-naive-hash">Naive hash</a></li>
+        <li><a href="/#naive-trie" id="markdown-toc-naive-trie">Naive trie</a></li>
+        <li><a href="/#storing-completions-in-the-trie" id="markdown-toc-storing-completions-in-the-trie">Storing completions in the trie</a></li>
+        <li><a href="/#holding-l-constant" id="markdown-toc-holding-l-constant">Holding L constant</a></li>
+        <li><a href="/#holding-k-constant" id="markdown-toc-holding-k-constant">Holding K constant</a></li>
+        <li><a href="/#prefix-hash-tree" id="markdown-toc-prefix-hash-tree">Prefix hash tree</a></li>
+        <li><a href="/#enter-redis" id="markdown-toc-enter-redis">Enter Redis</a></li>
+        <li><a href="/#comparing-redis-data-structures" id="markdown-toc-comparing-redis-data-structures">Comparing Redis data structures</a>        <ul>
+            <li><a href="/#list" id="markdown-toc-list">List</a></li>
+            <li><a href="/#sorted-set" id="markdown-toc-sorted-set">Sorted set</a></li>
+          </ul>
+        </li>
+        <li><a href="/#maintaining-bucket-limit-k" id="markdown-toc-maintaining-bucket-limit-k">Maintaining Bucket Limit (K)</a></li>
+      </ul>
+    </li>
+    <li><a href="/#persistence-strategy" id="markdown-toc-persistence-strategy">Persistence Strategy</a>    <ul>
+        <li><a href="/#why-mongodb" id="markdown-toc-why-mongodb">Why MongoDB</a></li>
+        <li><a href="/#working-with-mongodb---search" id="markdown-toc-working-with-mongodb---search">Working with MongoDB - Search</a></li>
+      </ul>
+    </li>
+    <li><a href="/#system-architecture" id="markdown-toc-system-architecture">System architecture</a>    <ul>
+        <li><a href="/#building-the-service" id="markdown-toc-building-the-service">Building the service</a></li>
+        <li><a href="/#authentication-setup" id="markdown-toc-authentication-setup">Authentication setup</a></li>
+        <li><a href="/#implementing-multi-tenancy" id="markdown-toc-implementing-multi-tenancy">Implementing Multi-tenancy</a>        <ul>
+            <li><a href="/#multi-tenancy-in-redis" id="markdown-toc-multi-tenancy-in-redis">Multi-tenancy in Redis</a></li>
+            <li><a href="/#multi-tenancy-in-mongodb" id="markdown-toc-multi-tenancy-in-mongodb">Multi-tenancy in MongoDB</a></li>
+          </ul>
+        </li>
+        <li><a href="/#clientjs" id="markdown-toc-clientjs">Client.js</a></li>
+      </ul>
+    </li>
+    <li><a href="/#future-plans" id="markdown-toc-future-plans">Future Plans</a>    <ul>
+        <li><a href="/#custom-configurability-of-l-and-k" id="markdown-toc-custom-configurability-of-l-and-k">Custom configurability of L and K</a></li>
+        <li><a href="/#scaling-redis-to-minimize-cache-misses-and-benchmarking-persistence-strategy" id="markdown-toc-scaling-redis-to-minimize-cache-misses-and-benchmarking-persistence-strategy">Scaling Redis to minimize cache misses, and benchmarking persistence strategy</a></li>
+        <li><a href="/#scripting-redis-to-reduce-network-requests" id="markdown-toc-scripting-redis-to-reduce-network-requests">Scripting Redis to reduce network requests</a></li>
+        <li><a href="/#api-rate-limiter" id="markdown-toc-api-rate-limiter">API rate limiter</a></li>
+      </ul>
+    </li>
+    <li><a href="/#questions" id="markdown-toc-questions">Questions?</a></li>
+    <li><a href="/#references" id="markdown-toc-references">References</a></li>
+  </ul>
 
   <div class="sidebar-item">
     <p>MIT Prefixy 2018.</p>

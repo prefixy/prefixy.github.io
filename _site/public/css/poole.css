@@ -120,8 +120,13 @@ ul, ol, dl {
   margin-bottom: 1rem;
 }
 
-#markdown-toc ul {
+#markdown-toc ul,
+#nav-toc ul {
   margin-bottom: 0;
+}
+
+#nav-toc > li {
+  margin-bottom: 1rem;
 }
 
 dt {

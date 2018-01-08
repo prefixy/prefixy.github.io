@@ -34,3 +34,8 @@ form#demo-form {
   margin: 0 auto;
   text-align: center;
 }
+
+.nav-toc-heading {
+  color: rgba(255,255,255,.6);
+  padding: .5rem 1rem;
+}
