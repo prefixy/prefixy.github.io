@@ -45,3 +45,12 @@ form#demo-form {
   color: rgba(255,255,255,.6);
   padding: .5rem 1rem;
 }
+
+@media (min-width: 38em) {
+  img.diagram-small {
+    max-width: 50%;
+  }
+  img.diagram-medium {
+    max-width: 66%;
+  }
+}
