@@ -4,7 +4,7 @@
  <title>Prefixy</title>
  <link href="http://localhost:4000/atom.xml" rel="self"/>
  <link href="http://localhost:4000/"/>
- <updated>2018-01-08T10:00:19-08:00</updated>
+ <updated>2018-01-08T10:05:39-08:00</updated>
  <id>http://localhost:4000</id>
  <author>
    <name>Mark Otto</name>
@@ -25,6 +25,8 @@
 &lt;p&gt;&lt;strong&gt;This is the story of how we built Prefixy: a highly scalable, query optimized, hosted prefix search service for building autocomplete suggestions.&lt;/strong&gt;&lt;/p&gt;
 
 &lt;p&gt;Want to see it in action? Try Prefixy at &lt;a href=&quot;https://www.prefixy.io&quot; target=&quot;_blank&quot;&gt;prefixy.io&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img style=&quot;display:none;&quot; src=&quot;/assets/social.png&quot; alt=&quot;screenshot&quot; /&gt;&lt;/p&gt;
 
 &lt;h2 class=&quot;no_toc&quot; id=&quot;table-of-contents&quot;&gt;Table of Contents&lt;/h2&gt;
 
