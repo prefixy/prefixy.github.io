@@ -4,7 +4,7 @@
  <title>Prefixy</title>
  <link href="http://localhost:4000/atom.xml" rel="self"/>
  <link href="http://localhost:4000/"/>
- <updated>2018-01-08T09:58:47-08:00</updated>
+ <updated>2018-01-08T10:00:19-08:00</updated>
  <id>http://localhost:4000</id>
  <author>
    <name>Mark Otto</name>
@@ -60,6 +60,7 @@
   &lt;li&gt;&lt;a href=&quot;#persistence-strategy&quot; id=&quot;markdown-toc-persistence-strategy&quot;&gt;Persistence Strategy&lt;/a&gt;    &lt;ul&gt;
       &lt;li&gt;&lt;a href=&quot;#why-mongodb&quot; id=&quot;markdown-toc-why-mongodb&quot;&gt;Why MongoDB&lt;/a&gt;&lt;/li&gt;
       &lt;li&gt;&lt;a href=&quot;#working-with-mongodb---search&quot; id=&quot;markdown-toc-working-with-mongodb---search&quot;&gt;Working with MongoDB - Search&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#working-with-mongodb---increment&quot; id=&quot;markdown-toc-working-with-mongodb---increment&quot;&gt;Working with MongoDB - Increment&lt;/a&gt;&lt;/li&gt;
     &lt;/ul&gt;
   &lt;/li&gt;
   &lt;li&gt;&lt;a href=&quot;#system-architecture&quot; id=&quot;markdown-toc-system-architecture&quot;&gt;System architecture&lt;/a&gt;    &lt;ul&gt;
@@ -418,8 +419,9 @@ Add the new completion with the removed completion’s score plus 1.&lt;/p&gt;
 
 &lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot; data-lang=&quot;javascript&quot;&gt;&lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;search&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;prefix&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;...)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;kd&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kr&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;redisClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;zrangeAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;prefix&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;...);&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;length&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;===&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;    &lt;span class=&quot;kr&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;mongoLoad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;prefix&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;    &lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kr&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;redisClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;zrangeAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;prefix&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;...);&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;br data-jekyll-commonmark-ghpages=&quot;&quot; /&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 
-&lt;p&gt;Working with MongoDB - Increment
-Whenever we make a change in Redis we wait for it to finish before persisting the change to Mongo. This is because Redis takes care of sorting logic for us.&lt;/p&gt;
+&lt;h3 id=&quot;working-with-mongodb---increment&quot;&gt;Working with MongoDB - Increment&lt;/h3&gt;
+
+&lt;p&gt;Whenever we make a change in Redis we wait for it to finish before persisting the change to Mongo. This is because Redis takes care of sorting logic for us.&lt;/p&gt;
 
 &lt;p&gt;After the promise for the changes into Redis returns, we then persist that prefix and its updated completions into MongoDB.&lt;/p&gt;
 
@@ -515,7 +517,7 @@ Whenever we make a change in Redis we wait for it to finish before persisting th
 &lt;h3 id=&quot;scaling-redis-to-minimize-cache-misses-and-benchmarking-persistence-strategy&quot;&gt;Scaling Redis to minimize cache misses, and benchmarking persistence strategy&lt;/h3&gt;
 &lt;p&gt;Recall that if we run out of memory, we evict the least recently used prefixes in Redis but still keep them in MongoDB. In the event that a user does search for an evicted prefix, we get the prefix from MongoDB and put it back into Redis. Now whenever someone searches for the same prefix again, we’ll be able to get it for them straight from Redis.&lt;/p&gt;
 
-&lt;p&gt;Right now, Prefixy is technically still in beta mode. We currently have 25MB of RAM for Redis and 496MB of hard-disk space for MongoDB, giving us a 20:1 ratio of hard disk space to memory.. With this ratio, suggestions already appear to return near instantaneously and therefore we have not yet done any testing to find the ideal ratio of memory to hard-disk space.&lt;/p&gt;
+&lt;p&gt;Right now, Prefixy is technically still in beta mode. We currently have 25MB of RAM for Redis and 496MB of hard-disk space for MongoDB, giving us a 20:1 ratio of hard disk space to memory. With this ratio, suggestions already appear to return near instantaneously and therefore we have not yet done any testing to find the ideal ratio of memory to hard-disk space.&lt;/p&gt;
 
 &lt;p&gt;However, we do hope to gain many more users within the coming weeks and months. In case Prefixy does experience a massive upsurge in popularity, we know we’ll need to perform extensive benchmarking in order to determine a suitable ratio of memory to hard-disk persistence. Tuning the app in this way will allow us to keep the response time low, even when we’re under heavy load from many users.&lt;/p&gt;
 

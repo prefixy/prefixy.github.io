@@ -21,14 +21,14 @@
 input#demo {
   background-color: #fff;
   margin: 0 auto;
-  padding: 1em;
+  padding: .85em 1em;
   border: 1px solid rgba(34,36,38,.15);
   -webkit-appearance: none;
   border-radius: 5px;
   box-shadow: none;
   line-height: 1.2em;
   font-size: 100%;
-  font-family: 'Helvetica Neue',Arial,Helvetica,sans-serif;
+  font-family: "PT Serif", Georgia, "Times New Roman", serif;
 }
 @media (min-width: 38em) {
   input#demo {
