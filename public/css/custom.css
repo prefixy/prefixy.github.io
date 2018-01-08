@@ -23,7 +23,7 @@ input#demo {
   margin: 0 auto;
   padding: 1em;
   border: 1px solid rgba(34,36,38,.15);
-  border-radius: .1rem;
+  border-radius: 5px;
   box-shadow: none;
   line-height: 1.2em;
   font-size: 100%;
