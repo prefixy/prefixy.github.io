@@ -4,7 +4,7 @@
  <title>Prefixy</title>
  <link href="http://localhost:4000/atom.xml" rel="self"/>
  <link href="http://localhost:4000/"/>
- <updated>2018-01-07T21:38:42-05:00</updated>
+ <updated>2018-01-07T22:00:31-05:00</updated>
  <id>http://localhost:4000</id>
  <author>
    <name>Mark Otto</name>
@@ -100,7 +100,7 @@ Many of these solutions take time and effort to implement, are limited by data c
 &lt;p&gt;To get an idea of how it works on the frontend, try out the demo below. Notice that as you type, suggestions appear that you can select. Upon pressing Enter, your search is submitted, and depending on the popularity ranking of other suggestions, you may see your search appear higher in the list of suggestions the next time you type.&lt;/p&gt;
 
 &lt;form id=&quot;demo-form&quot; class=&quot;&quot; action=&quot;#&quot;&gt;
-  &lt;input id=&quot;demo&quot; type=&quot;search&quot; placeholder=&quot;Start typing...&quot; /&gt;
+  &lt;input id=&quot;demo&quot; type=&quot;text&quot; placeholder=&quot;Start typing...&quot; /&gt;
 &lt;/form&gt;
 
 &lt;h3 id=&quot;about-us&quot;&gt;About us&lt;/h3&gt;
