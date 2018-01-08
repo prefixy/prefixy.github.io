@@ -4,7 +4,7 @@
  <title>Prefixy</title>
  <link href="http://localhost:4000/atom.xml" rel="self"/>
  <link href="http://localhost:4000/"/>
- <updated>2018-01-07T16:22:46-08:00</updated>
+ <updated>2018-01-07T16:55:22-08:00</updated>
  <id>http://localhost:4000</id>
  <author>
    <name>Mark Otto</name>
@@ -13,10 +13,10 @@
 
  
  <entry>
-   <title>Building Prefixy</title>
-   <link href="http://localhost:4000/2017/12/13/writeup/"/>
-   <updated>2017-12-13T14:16:01-08:00</updated>
-   <id>http://localhost:4000/2017/12/13/writeup</id>
+   <title></title>
+   <link href="http://localhost:4000/2018/01/07/2017-12-13-writeup/"/>
+   <updated>2018-01-07T16:55:22-08:00</updated>
+   <id>http://localhost:4000/2018/01/07/2017-12-13-writeup</id>
    <content type="html">&lt;!-- &lt;video style=&quot;width:100%&quot; autoplay loop&gt;
   &lt;source src=&quot;/assets/demo.mp4&quot; type=&quot;video/mp4&quot; /&gt;
   Your browser does not support the video tag.
